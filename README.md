@@ -79,7 +79,11 @@ Noxis is designed for high-performance file indexing and search in large-scale e
 
 ## 📸 Screenshots
 
-(Add interface screenshots here)
+<img width="1920" height="935" alt="Captura de tela de 2026-04-06 14-38-27" src="https://github.com/user-attachments/assets/bf069645-f519-4829-bbe4-4a3fcf2feca4" />
+
+<img width="1920" height="935" alt="Captura de tela de 2026-04-06 14-38-36" src="https://github.com/user-attachments/assets/2339be1b-afab-49b5-b3de-49888d779508" />
+
+
 
 ---
 
