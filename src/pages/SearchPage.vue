@@ -248,10 +248,9 @@ function openPreview(file = selectedFile.value) {
     .split('/')
     .map(part => encodeURIComponent(part))
     .join('/')
+    const previewUrl = `http://192.168.0.162:9002/preview?path=${encodedPath}`
 
-  const previewUrl = `http://localhost:9001/preview?path=${encodedPath}`
-
-  window.open(previewUrl, '_blank')
+    window.open(previewUrl, '_blank')
 }
 
 function downloadFile(file = selectedFile.value) {
