@@ -264,7 +264,7 @@ function downloadFile(file = selectedFile.value) {
     return
   }
 
-  window.open(`http://localhost:9001${file.downloadLink}`, '_blank')
+  window.open(`http://192.168.0.162:9002${file.downloadLink}`, '_blank')
 }
 
 function changePage(newPage) {
