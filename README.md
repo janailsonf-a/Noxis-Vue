@@ -44,5 +44,5 @@ Ele foi desenvolvido com foco em:
 Clone o repositório:
 
 ```bash
-git https://github.com/janailsonf-a/Noxis-Vue.git
+git clone https://github.com/janailsonf-a/Noxis-Vue.git
 cd Noxis-Vue
