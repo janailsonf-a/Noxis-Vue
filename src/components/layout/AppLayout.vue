@@ -8,10 +8,10 @@ defineProps({
 
 <template>
   <div class="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)] transition-colors duration-300">
-    <div class="flex min-h-screen">
+    <div class="min-h-screen">
       <Sidebar />
 
-      <main class="relative flex-1 overflow-hidden bg-[var(--app-bg)] transition-colors duration-300">
+      <main class="relative ml-[280px] min-h-screen bg-[var(--app-bg)] transition-colors duration-300">
         <div class="pointer-events-none absolute inset-0">
           <div
             class="absolute inset-0 bg-[radial-gradient(circle_at_top,var(--app-grid-radial),transparent_32%)]"
