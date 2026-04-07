@@ -98,7 +98,7 @@ function highlightText(text, term) {
 
   return text.replace(
     regex,
-    '<mark class="rounded px-1 py-0.5 bg-[#3A2A12] text-[#FFB95C]">$1</mark>'
+    '<mark class="rounded px-1 py-0.5 bg-[var(--app-accent-bg)] text-[var(--app-accent-text)]">$1</mark>'
   )
 }
 
@@ -299,35 +299,35 @@ watch(query, () => {
         <div class="mb-6 flex flex-col gap-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <div class="mb-2 flex items-center gap-2 text-sm text-zinc-500">
+              <div class="mb-2 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
                 <span>Noxis</span>
                 <ChevronRight class="h-4 w-4" />
-                <span class="font-medium text-zinc-300">Arquivos</span>
+                <span class="font-medium text-[var(--app-text-soft)]">Arquivos</span>
               </div>
 
-              <h1 class="text-[34px] font-semibold tracking-[-0.04em] text-white">
+              <h1 class="text-[34px] font-semibold tracking-[-0.04em] text-[var(--app-text)]">
                 Arquivos
               </h1>
 
-              <p class="mt-1 text-sm text-zinc-400">
+              <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                 Encontre arquivos por nome, extensão ou caminho.
               </p>
             </div>
           </div>
 
-          <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
+          <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[var(--app-shadow)]">
             <div class="flex flex-col gap-4">
               <div class="relative">
-                <Search class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500" />
+                <Search class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--app-text-subtle)]" />
                 <input
                   v-model="query"
                   type="text"
                   placeholder="Buscar arquivos por nome, caminho ou extensão..."
-                  class="h-13 w-full rounded-2xl border border-white/6 bg-[#232323] pl-12 pr-28 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-[#FF9200]/40 focus:bg-[#262626]"
+                  class="h-13 w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] pl-12 pr-28 text-sm text-[var(--app-text)] outline-none transition placeholder:text-[var(--app-text-subtle)] focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)] focus:bg-[var(--app-surface-hover)]"
                   @keydown.enter="submitSearch"
                 />
                 <button
-                  class="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-[#FF9200] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e88400]"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
                   @click="submitSearch"
                 >
                   Buscar
@@ -342,8 +342,8 @@ watch(query, () => {
                     class="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition"
                     :class="
                       selectedExt === item.value
-                        ? 'border-[#FF9200]/20 bg-[#3A2A12] text-[#FFB95C]'
-                        : 'border-white/6 bg-[#232323] text-zinc-400 hover:bg-[#2A2A2A] hover:text-white'
+                        ? 'border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] text-[var(--app-accent-text)]'
+                        : 'border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-muted)] hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]'
                     "
                     @click="applyQuickFilter(item.value)"
                   >
@@ -352,7 +352,7 @@ watch(query, () => {
                   </button>
 
                   <button
-                    class="inline-flex items-center gap-2 rounded-full border border-white/6 bg-[#202020] px-3 py-2 text-sm text-zinc-400 transition hover:bg-[#262626] hover:text-white"
+                    class="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface-2)] px-3 py-2 text-sm text-[var(--app-text-muted)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     @click="clearFilters"
                   >
                     Limpar filtros
@@ -362,20 +362,20 @@ watch(query, () => {
                 <div class="flex flex-wrap items-center gap-2">
                   <select
                     v-model="order"
-                    class="h-10 rounded-full border border-white/6 bg-[#232323] px-4 text-sm text-zinc-300 outline-none transition hover:bg-[#2A2A2A]"
+                    class="h-10 rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 text-sm text-[var(--app-text-soft)] outline-none transition hover:bg-[var(--app-surface-hover)]"
                   >
-                    <option value="recent" class="bg-[#232323] text-white">Mais recentes</option>
-                    <option value="relevance" class="bg-[#232323] text-white">Relevância</option>
-                    <option value="name_asc" class="bg-[#232323] text-white">Nome A-Z</option>
-                    <option value="name_desc" class="bg-[#232323] text-white">Nome Z-A</option>
-                    <option value="size_desc" class="bg-[#232323] text-white">Maior tamanho</option>
-                    <option value="type" class="bg-[#232323] text-white">Tipo</option>
+                    <option value="recent" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Mais recentes</option>
+                    <option value="relevance" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Relevância</option>
+                    <option value="name_asc" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Nome A-Z</option>
+                    <option value="name_desc" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Nome Z-A</option>
+                    <option value="size_desc" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Maior tamanho</option>
+                    <option value="type" class="bg-[var(--app-surface-3)] text-[var(--app-text)]">Tipo</option>
                   </select>
 
-                  <div class="flex items-center rounded-full border border-white/6 bg-[#232323] p-1">
+                  <div class="flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] p-1">
                     <button
                       class="inline-flex h-8 w-8 items-center justify-center rounded-full transition"
-                      :class="viewMode === 'list' ? 'bg-[#FF9200] text-white' : 'text-zinc-400 hover:text-white'"
+                      :class="viewMode === 'list' ? 'bg-[var(--app-primary)] text-[var(--app-text)]' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]'"
                       @click="viewMode = 'list'"
                     >
                       <List class="h-4 w-4" />
@@ -383,7 +383,7 @@ watch(query, () => {
 
                     <button
                       class="inline-flex h-8 w-8 items-center justify-center rounded-full transition"
-                      :class="viewMode === 'grid' ? 'bg-[#FF9200] text-white' : 'text-zinc-400 hover:text-white'"
+                      :class="viewMode === 'grid' ? 'bg-[var(--app-primary)] text-[var(--app-text)]' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]'"
                       @click="viewMode = 'grid'"
                     >
                       <Grid2X2 class="h-4 w-4" />
@@ -394,7 +394,7 @@ watch(query, () => {
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-sm text-zinc-500">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-sm text-[var(--app-text-subtle)]">
             <span>{{ meta.query_ms ?? '--' }} ms</span>
             <span>•</span>
             <span>Ordenação: {{ meta.order }}</span>
@@ -414,9 +414,9 @@ watch(query, () => {
 
         <div
           v-if="viewMode === 'list'"
-          class="overflow-hidden rounded-[28px] border border-white/6 bg-[#1C1C1C] shadow-[0_18px_50px_rgba(0,0,0,0.20)]"
+          class="overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow)]"
         >
-          <div class="hidden grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] gap-5 border-b border-white/6 bg-[#202020] px-5 py-3 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500 xl:grid">
+          <div class="hidden grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] gap-5 border-b border-[var(--app-border)] bg-[var(--app-surface-2)] px-5 py-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--app-text-subtle)] xl:grid">
             <div>Nome</div>
             <div>Caminho</div>
             <div>Tipo</div>
@@ -434,35 +434,35 @@ watch(query, () => {
               <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] xl:items-center xl:gap-5">
                 <div class="min-w-0">
                   <div class="flex items-start gap-3">
-                    <div class="h-10 w-10 shrink-0 rounded-xl bg-[#252525]"></div>
+                    <div class="h-10 w-10 shrink-0 rounded-xl bg-[var(--app-surface-4)]"></div>
                     <div class="min-w-0 flex-1">
-                      <div class="h-4 w-48 rounded bg-[#2A2A2A]"></div>
-                      <div class="mt-2 h-3 w-72 rounded bg-[#252525]"></div>
+                      <div class="h-4 w-48 rounded bg-[var(--app-surface-hover)]"></div>
+                      <div class="mt-2 h-3 w-72 rounded bg-[var(--app-surface-4)]"></div>
                     </div>
                   </div>
                 </div>
                 <div class="hidden xl:block">
-                  <div class="h-3 w-48 rounded bg-[#252525]"></div>
+                  <div class="h-3 w-48 rounded bg-[var(--app-surface-4)]"></div>
                 </div>
                 <div class="hidden xl:block">
-                  <div class="h-6 w-16 rounded-md bg-[#3A2A12]"></div>
+                  <div class="h-6 w-16 rounded-md bg-[var(--app-accent-bg)]"></div>
                 </div>
                 <div class="hidden xl:block">
-                  <div class="h-3 w-16 rounded bg-[#252525]"></div>
+                  <div class="h-3 w-16 rounded bg-[var(--app-surface-4)]"></div>
                 </div>
                 <div class="hidden xl:block">
-                  <div class="h-3 w-24 rounded bg-[#252525]"></div>
+                  <div class="h-3 w-24 rounded bg-[var(--app-surface-4)]"></div>
                 </div>
                 <div class="flex gap-2 xl:justify-end">
-                  <div class="h-9 w-9 rounded-lg bg-[#2A2A2A]"></div>
-                  <div class="h-9 w-9 rounded-lg bg-[#252525]"></div>
-                  <div class="h-9 w-9 rounded-lg bg-[#252525]"></div>
+                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-hover)]"></div>
+                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
+                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div v-else-if="files.length === 0" class="px-5 py-12 text-sm text-zinc-400">
+          <div v-else-if="files.length === 0" class="px-5 py-12 text-sm text-[var(--app-text-muted)]">
             Nenhum arquivo encontrado.
           </div>
 
@@ -470,31 +470,31 @@ watch(query, () => {
             <article
               v-for="file in files"
               :key="file.id"
-              class="cursor-pointer border-b border-white/6 px-5 py-4 transition last:border-b-0 hover:bg-[#222222]"
+              class="cursor-pointer border-b border-[var(--app-border)] px-5 py-4 transition last:border-b-0 hover:bg-[var(--app-surface-2)]"
               @click="openDetails(file)"
             >
               <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] xl:items-center xl:gap-5">
                 <div class="min-w-0">
                   <div class="flex items-start gap-3">
-                    <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#252525] text-zinc-400">
+                    <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--app-surface-4)] text-[var(--app-text-muted)]">
                       <File class="h-4 w-4" />
                     </div>
 
                     <div class="min-w-0">
                       <div class="flex items-center gap-2">
                         <h3
-                          class="truncate text-[15px] font-medium text-white"
+                          class="truncate text-[15px] font-medium text-[var(--app-text)]"
                           :title="file.name"
                           v-html="highlightText(file.name, query)"
                         ></h3>
 
-                        <span class="inline-flex rounded-md border border-[#FF9200]/20 bg-[#3A2A12] px-2 py-0.5 text-[11px] font-medium text-[#FFB95C] xl:hidden">
+                        <span class="inline-flex rounded-md border border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--app-accent-text)] xl:hidden">
                           {{ formatTypeLabel(file.type) }}
                         </span>
                       </div>
 
                       <p
-                        class="mt-1 text-sm text-zinc-500"
+                        class="mt-1 text-sm text-[var(--app-text-subtle)]"
                         :title="file.path"
                         v-html="highlightText(shortenPath(file.path, 78), query)"
                       ></p>
@@ -504,30 +504,30 @@ watch(query, () => {
 
                 <div class="hidden min-w-0 xl:block">
                   <p
-                    class="truncate text-sm text-zinc-500"
+                    class="truncate text-sm text-[var(--app-text-subtle)]"
                     :title="file.fullPath || file.path"
                     v-html="highlightText(shortenPath(file.fullPath || file.path, 64), query)"
                   ></p>
                 </div>
 
                 <div class="hidden xl:block">
-                  <span class="inline-flex rounded-md border border-[#FF9200]/20 bg-[#3A2A12] px-2 py-1 text-xs font-medium text-[#FFB95C]">
+                  <span class="inline-flex rounded-md border border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] px-2 py-1 text-xs font-medium text-[var(--app-accent-text)]">
                     {{ formatTypeLabel(file.type) }}
                   </span>
                 </div>
 
-                <div class="hidden text-sm text-zinc-400 xl:block">
+                <div class="hidden text-sm text-[var(--app-text-muted)] xl:block">
                   {{ file.size }}
                 </div>
 
-                <div class="hidden text-sm text-zinc-400 xl:block">
+                <div class="hidden text-sm text-[var(--app-text-muted)] xl:block">
                   {{ file.updated }}
                 </div>
 
                 <div class="flex min-w-0 flex-wrap items-center gap-2 xl:justify-end">
                   <button
                     v-if="canPreview(file)"
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#FF9200] text-white transition hover:bg-[#e88400]"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--app-primary)] text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
                     title="Preview"
                     @click.stop="openPreview(file)"
                   >
@@ -536,7 +536,7 @@ watch(query, () => {
 
                   <button
                     v-else
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/6 bg-[#232323] text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     title="Baixar"
                     @click.stop="downloadFile(file)"
                   >
@@ -544,7 +544,7 @@ watch(query, () => {
                   </button>
 
                   <button
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/6 bg-[#232323] text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     title="Baixar"
                     @click.stop="downloadFile(file)"
                   >
@@ -552,7 +552,7 @@ watch(query, () => {
                   </button>
 
                   <button
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/6 bg-[#202020] text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-2)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     title="Copiar caminho"
                     @click.stop="copyPath(file)"
                   >
@@ -572,25 +572,25 @@ watch(query, () => {
             <div
               v-for="n in 8"
               :key="n"
-              class="animate-pulse rounded-[28px] border border-white/6 bg-[#1C1C1C] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.20)]"
+              class="animate-pulse rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[var(--app-shadow)]"
             >
-              <div class="mb-4 h-32 rounded-2xl bg-[#252525]"></div>
-              <div class="h-4 w-40 rounded bg-[#2A2A2A]"></div>
-              <div class="mt-2 h-3 w-28 rounded bg-[#252525]"></div>
+              <div class="mb-4 h-32 rounded-2xl bg-[var(--app-surface-4)]"></div>
+              <div class="h-4 w-40 rounded bg-[var(--app-surface-hover)]"></div>
+              <div class="mt-2 h-3 w-28 rounded bg-[var(--app-surface-4)]"></div>
               <div class="mt-4 flex items-center justify-between">
-                <div class="h-3 w-16 rounded bg-[#252525]"></div>
-                <div class="h-5 w-14 rounded bg-[#3A2A12]"></div>
+                <div class="h-3 w-16 rounded bg-[var(--app-surface-4)]"></div>
+                <div class="h-5 w-14 rounded bg-[var(--app-accent-bg)]"></div>
               </div>
-              <div class="mt-4 h-10 rounded-xl bg-[#2A2A2A]"></div>
+              <div class="mt-4 h-10 rounded-xl bg-[var(--app-surface-hover)]"></div>
               <div class="mt-2 grid grid-cols-2 gap-2">
-                <div class="h-10 rounded-xl bg-[#252525]"></div>
-                <div class="h-10 rounded-xl bg-[#252525]"></div>
+                <div class="h-10 rounded-xl bg-[var(--app-surface-4)]"></div>
+                <div class="h-10 rounded-xl bg-[var(--app-surface-4)]"></div>
               </div>
             </div>
           </template>
 
           <template v-else-if="files.length === 0">
-            <div class="col-span-full rounded-[28px] border border-white/6 bg-[#1C1C1C] px-5 py-12 text-sm text-zinc-400 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
+            <div class="col-span-full rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-12 text-sm text-[var(--app-text-muted)] shadow-[var(--app-shadow)]">
               Nenhum arquivo encontrado.
             </div>
           </template>
@@ -599,10 +599,10 @@ watch(query, () => {
             <article
               v-for="file in files"
               :key="file.id"
-              class="cursor-pointer rounded-[28px] border border-white/6 bg-[#1C1C1C] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.20)] transition hover:-translate-y-[1px] hover:bg-[#202020] hover:shadow-[0_24px_60px_rgba(0,0,0,0.24)]"
+              class="cursor-pointer rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[var(--app-shadow)] transition hover:-translate-y-[1px] hover:bg-[var(--app-surface-2)] hover:shadow-[var(--app-shadow-strong)]"
               @click="openDetails(file)"
             >
-              <div class="mb-4 flex h-32 items-center justify-center overflow-hidden rounded-2xl bg-[#232323]">
+              <div class="mb-4 flex h-32 items-center justify-center overflow-hidden rounded-2xl bg-[var(--app-surface-3)]">
                 <img
                   v-if="isImage(file)"
                   :src="getImageUrl(file)"
@@ -611,33 +611,33 @@ watch(query, () => {
                 />
                 <FileText
                   v-else
-                  class="h-8 w-8 text-zinc-500"
+                  class="h-8 w-8 text-[var(--app-text-subtle)]"
                 />
               </div>
 
               <div class="min-w-0">
                 <h3
-                  class="truncate text-[15px] font-medium text-white"
+                  class="truncate text-[15px] font-medium text-[var(--app-text)]"
                   :title="file.name"
                   v-html="highlightText(file.name, query)"
                 ></h3>
 
                 <p
-                  class="mt-1 truncate text-sm text-zinc-500"
+                  class="mt-1 truncate text-sm text-[var(--app-text-subtle)]"
                   :title="file.path"
                   v-html="highlightText(shortenPath(file.path, 52), query)"
                 ></p>
               </div>
 
-              <div class="mt-4 flex items-center justify-between text-sm text-zinc-500">
+              <div class="mt-4 flex items-center justify-between text-sm text-[var(--app-text-subtle)]">
                 <span>{{ file.size }}</span>
-                <span class="font-medium text-[#FFB95C]">{{ formatTypeLabel(file.type) }}</span>
+                <span class="font-medium text-[var(--app-accent-text)]">{{ formatTypeLabel(file.type) }}</span>
               </div>
 
               <div class="mt-4 grid gap-2">
                 <button
                   v-if="canPreview(file)"
-                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF9200] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#e88400]"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-2.5 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
                   @click.stop="openPreview(file)"
                 >
                   <Eye class="h-4 w-4" />
@@ -646,7 +646,7 @@ watch(query, () => {
 
                 <button
                   v-else
-                  class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#232323] px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-2.5 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                   @click.stop="downloadFile(file)"
                 >
                   <Download class="h-4 w-4" />
@@ -655,7 +655,7 @@ watch(query, () => {
 
                 <div class="grid grid-cols-2 gap-2">
                   <button
-                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#232323] px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     @click.stop="downloadFile(file)"
                   >
                     <Download class="h-4 w-4" />
@@ -663,7 +663,7 @@ watch(query, () => {
                   </button>
 
                   <button
-                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#202020] px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-3 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     @click.stop="copyPath(file)"
                   >
                     <Clipboard class="h-4 w-4" />
@@ -677,15 +677,15 @@ watch(query, () => {
 
         <div
           v-if="(meta.total_pages || 0) > 1"
-          class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/6 bg-[#1C1C1C] px-4 py-3 shadow-[0_12px_35px_rgba(0,0,0,0.18)]"
+          class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-3 shadow-[0_12px_35px_rgba(0,0,0,0.18)]"
         >
-          <div class="text-sm text-zinc-400">
+          <div class="text-sm text-[var(--app-text-muted)]">
             Página {{ meta.page || 1 }} de {{ meta.total_pages || 1 }}
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
             <button
-              class="rounded-lg border border-white/6 bg-[#232323] px-3 py-2 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              class="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)] disabled:cursor-not-allowed disabled:opacity-40"
               :disabled="(meta.page || 1) <= 1"
               @click="changePage((meta.page || 1) - 1)"
             >
@@ -699,15 +699,15 @@ watch(query, () => {
               class="rounded-lg px-3 py-2 text-sm transition"
               :class="
                 p === meta.page
-                  ? 'bg-[#FF9200] text-white'
-                  : 'border border-white/6 bg-[#232323] text-zinc-300 hover:bg-[#2A2A2A] hover:text-white'
+                  ? 'bg-[var(--app-primary)] text-[var(--app-text)]'
+                  : 'border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]'
               "
             >
               {{ p }}
             </button>
 
             <button
-              class="rounded-lg border border-white/6 bg-[#232323] px-3 py-2 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              class="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)] disabled:cursor-not-allowed disabled:opacity-40"
               :disabled="(meta.page || 1) >= (meta.total_pages || 1)"
               @click="changePage((meta.page || 1) + 1)"
             >
@@ -720,21 +720,21 @@ watch(query, () => {
       <teleport to="body">
         <div
           v-if="showDetailsModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--app-overlay)] p-4 backdrop-blur-sm"
           @click.self="closeDetails"
         >
-          <div class="w-full max-w-2xl overflow-hidden rounded-[30px] border border-white/6 bg-[#1C1C1C] shadow-[0_24px_70px_rgba(0,0,0,0.40)]">
+          <div class="w-full max-w-2xl overflow-hidden rounded-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow-strong)]">
             <template v-if="selectedFile">
-              <div class="flex items-center justify-between border-b border-white/6 px-6 py-4">
+              <div class="flex items-center justify-between border-b border-[var(--app-border)] px-6 py-4">
                 <div>
-                  <h2 class="text-lg font-semibold text-white">Detalhes do arquivo</h2>
-                  <p class="mt-1 text-sm text-zinc-400">
+                  <h2 class="text-lg font-semibold text-[var(--app-text)]">Detalhes do arquivo</h2>
+                  <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                     Informações completas e ações rápidas.
                   </p>
                 </div>
 
                 <button
-                  class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/6 bg-[#232323] text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                  class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                   @click="closeDetails"
                 >
                   <X class="h-5 w-5" />
@@ -743,7 +743,7 @@ watch(query, () => {
 
               <div class="grid gap-6 p-6 lg:grid-cols-[220px_minmax(0,1fr)]">
                 <div>
-                  <div class="flex h-44 items-center justify-center overflow-hidden rounded-3xl bg-[#232323]">
+                  <div class="flex h-44 items-center justify-center overflow-hidden rounded-3xl bg-[var(--app-surface-3)]">
                     <img
                       v-if="isImage(selectedFile)"
                       :src="getImageUrl(selectedFile)"
@@ -752,28 +752,28 @@ watch(query, () => {
                     />
                     <FileText
                       v-else
-                      class="h-12 w-12 text-zinc-500"
+                      class="h-12 w-12 text-[var(--app-text-subtle)]"
                     />
                   </div>
                 </div>
 
                 <div class="min-w-0">
                   <h3
-                    class="break-words text-2xl font-semibold tracking-[-0.02em] text-white"
+                    class="break-words text-2xl font-semibold tracking-[-0.02em] text-[var(--app-text)]"
                     v-html="highlightText(selectedFile.name, query)"
                   ></h3>
 
-                  <p class="mt-2 text-sm leading-6 text-zinc-400">
+                  <p class="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
                     {{ selectedFile.description }}
                   </p>
 
                   <div class="mt-6 grid gap-4">
                     <div class="flex items-start gap-3">
-                      <FolderTree class="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                      <FolderTree class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                       <div class="min-w-0">
-                        <div class="text-sm font-medium text-zinc-200">Caminho</div>
+                        <div class="text-sm font-medium text-[var(--app-text-strong)]">Caminho</div>
                         <p
-                          class="mt-1 break-all text-sm text-zinc-400"
+                          class="mt-1 break-all text-sm text-[var(--app-text-muted)]"
                           v-html="highlightText(selectedFile.fullPath, query)"
                         ></p>
                       </div>
@@ -781,40 +781,40 @@ watch(query, () => {
 
                     <div class="grid gap-4 sm:grid-cols-2">
                       <div class="flex items-start gap-3">
-                        <Calendar class="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                        <Calendar class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                         <div>
-                          <div class="text-sm font-medium text-zinc-200">Última modificação</div>
-                          <p class="mt-1 text-sm text-zinc-400">
+                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Última modificação</div>
+                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                             {{ selectedFile.updated }}
                           </p>
                         </div>
                       </div>
 
                       <div class="flex items-start gap-3">
-                        <HardDrive class="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                        <HardDrive class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                         <div>
-                          <div class="text-sm font-medium text-zinc-200">Tamanho</div>
-                          <p class="mt-1 text-sm text-zinc-400">
+                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Tamanho</div>
+                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                             {{ selectedFile.size }}
                           </p>
                         </div>
                       </div>
 
                       <div class="flex items-start gap-3">
-                        <File class="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                        <File class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                         <div>
-                          <div class="text-sm font-medium text-zinc-200">Tipo</div>
-                          <p class="mt-1 text-sm text-zinc-400">
+                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Tipo</div>
+                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                             {{ formatTypeLabel(selectedFile.type) }}
                           </p>
                         </div>
                       </div>
 
                       <div class="flex items-start gap-3">
-                        <Info class="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                        <Info class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                         <div>
-                          <div class="text-sm font-medium text-zinc-200">Área</div>
-                          <p class="mt-1 text-sm text-zinc-400">
+                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Área</div>
+                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                             {{ selectedFile.area }}
                           </p>
                         </div>
@@ -825,7 +825,7 @@ watch(query, () => {
                   <div class="mt-6 grid gap-2 sm:grid-cols-3">
                     <button
                       v-if="canPreview(selectedFile)"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF9200] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#e88400]"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
                       @click="openPreview(selectedFile)"
                     >
                       <Eye class="h-4 w-4" />
@@ -834,7 +834,7 @@ watch(query, () => {
 
                     <button
                       v-else
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#232323] px-4 py-3 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                       @click="downloadFile(selectedFile)"
                     >
                       <Download class="h-4 w-4" />
@@ -842,7 +842,7 @@ watch(query, () => {
                     </button>
 
                     <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#232323] px-4 py-3 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                       @click="downloadFile(selectedFile)"
                     >
                       <Download class="h-4 w-4" />
@@ -850,7 +850,7 @@ watch(query, () => {
                     </button>
 
                     <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/6 bg-[#202020] px-4 py-3 text-sm text-zinc-300 transition hover:bg-[#2A2A2A] hover:text-white"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                       @click="copyPath(selectedFile)"
                     >
                       <component :is="copied ? Check : Clipboard" class="h-4 w-4" />

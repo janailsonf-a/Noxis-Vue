@@ -255,17 +255,17 @@ onMounted(() => {
   <AppLayout title="Status">
     <div class="grid gap-6">
       <div>
-        <div class="mb-2 flex items-center gap-2 text-sm text-zinc-500">
+        <div class="mb-2 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
           <span>Noxis</span>
           <span>/</span>
-          <span class="font-medium text-zinc-300">Status</span>
+          <span class="font-medium text-[var(--app-text-soft)]">Status</span>
         </div>
 
-        <h1 class="text-[34px] font-semibold tracking-[-0.04em] text-white">
+        <h1 class="text-[34px] font-semibold tracking-[-0.04em] text-[var(--app-text)]">
           Status do sistema
         </h1>
 
-        <p class="mt-1 text-sm text-zinc-400">
+        <p class="mt-1 text-sm text-[var(--app-text-muted)]">
           Monitoramento em tempo real do indexador e dos principais indicadores.
         </p>
       </div>
@@ -278,95 +278,95 @@ onMounted(() => {
       </section>
 
       <section class="grid gap-4 md:grid-cols-4">
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
-          <div class="mb-3 flex items-center gap-2 text-sm text-zinc-500">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
+          <div class="mb-3 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
             <Activity class="h-4 w-4" />
             Status geral
           </div>
-          <div class="text-3xl font-semibold capitalize text-white">
+          <div class="text-3xl font-semibold capitalize text-[var(--app-text)]">
             {{ status.overall_status }}
           </div>
         </div>
 
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
-          <div class="mb-3 flex items-center gap-2 text-sm text-zinc-500">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
+          <div class="mb-3 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
             <Cpu class="h-4 w-4" />
             CPU
           </div>
-          <div class="text-3xl font-semibold text-white">
+          <div class="text-3xl font-semibold text-[var(--app-text)]">
             {{ status.metrics.cpu }}%
           </div>
         </div>
 
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
-          <div class="mb-3 flex items-center gap-2 text-sm text-zinc-500">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
+          <div class="mb-3 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
             <MemoryStick class="h-4 w-4" />
             RAM
           </div>
-          <div class="text-3xl font-semibold text-white">
+          <div class="text-3xl font-semibold text-[var(--app-text)]">
             {{ status.metrics.ram }}%
           </div>
         </div>
 
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
-          <div class="mb-3 flex items-center gap-2 text-sm text-zinc-500">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
+          <div class="mb-3 flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
             <HardDrive class="h-4 w-4" />
             Disco
           </div>
-          <div class="text-3xl font-semibold text-white">
+          <div class="text-3xl font-semibold text-[var(--app-text)]">
             {{ status.disk.usage_percent }}%
           </div>
         </div>
       </section>
 
       <section class="grid gap-6">
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
           <div class="mb-4">
-            <h2 class="text-xl font-semibold text-white">Indexação</h2>
-            <p class="mt-1 text-sm text-zinc-400">
+            <h2 class="text-xl font-semibold text-[var(--app-text)]">Indexação</h2>
+            <p class="mt-1 text-sm text-[var(--app-text-muted)]">
               Visão atual do worker e do volume processado.
             </p>
           </div>
 
-          <div class="mb-5 h-3 overflow-hidden rounded-full bg-[#232323]">
+          <div class="mb-5 h-3 overflow-hidden rounded-full bg-[var(--app-surface-3)]">
             <div
-              class="h-full rounded-full bg-[#FF9200]"
+              class="h-full rounded-full bg-[var(--app-primary)]"
               :style="{ width: `${indexer.percent || 0}%` }"
             ></div>
           </div>
 
           <div class="grid gap-4 md:grid-cols-5">
-            <div class="rounded-2xl bg-[#232323] px-4 py-3">
-              <div class="text-sm text-zinc-500">Percentual</div>
-              <div class="mt-1 text-xl font-semibold text-white">
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Percentual</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                 {{ indexer.percent }}%
               </div>
             </div>
 
-            <div class="rounded-2xl bg-[#232323] px-4 py-3">
-              <div class="text-sm text-zinc-500">Processados</div>
-              <div class="mt-1 text-xl font-semibold text-white">
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Processados</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                 {{ formatNumber(indexer.processed) }}
               </div>
             </div>
 
-            <div class="rounded-2xl bg-[#232323] px-4 py-3">
-              <div class="text-sm text-zinc-500">Velocidade</div>
-              <div class="mt-1 text-xl font-semibold text-white">
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Velocidade</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                 {{ formatNumber(indexer.speed) }}
               </div>
             </div>
 
-            <div class="rounded-2xl bg-[#232323] px-4 py-3">
-              <div class="text-sm text-zinc-500">Novos</div>
-              <div class="mt-1 text-xl font-semibold text-white">
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Novos</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                 {{ formatNumber(indexer.last_new) }}
               </div>
             </div>
 
-            <div class="rounded-2xl bg-[#232323] px-4 py-3">
-              <div class="text-sm text-zinc-500">Última execução</div>
-              <div class="mt-1 text-base font-semibold text-white">
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Última execução</div>
+              <div class="mt-1 text-base font-semibold text-[var(--app-text)]">
                 {{ formatDateTime(indexer.last_finished_time) }}
               </div>
             </div>
@@ -375,14 +375,14 @@ onMounted(() => {
       </section>
 
       <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
           <div class="mb-4 flex items-start justify-between">
             <div>
-              <h2 class="flex items-center gap-2 text-xl font-semibold text-white">
-                <Terminal class="h-5 w-5 text-[#FF9200]" />
+              <h2 class="flex items-center gap-2 text-xl font-semibold text-[var(--app-text)]">
+                <Terminal class="h-5 w-5 text-[var(--app-primary)]" />
                 Atividades recentes
               </h2>
-              <p class="mt-1 text-sm text-zinc-400">
+              <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                 Saída recente do worker em formato de terminal.
               </p>
             </div>
@@ -394,35 +394,35 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-[20px] border border-white/6 bg-[#0F0F0F]">
-            <div class="border-b border-white/6 px-4 py-3 text-xs uppercase tracking-[0.18em] text-zinc-500">
+          <div class="overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-terminal)]">
+            <div class="border-b border-[var(--app-border)] px-4 py-3 text-xs uppercase tracking-[0.18em] text-[var(--app-text-subtle)]">
               noxis@worker:~$
             </div>
 
-            <div v-if="loading" class="px-4 py-8 font-mono text-sm text-zinc-500">
-              <span class="text-[#FF9200]">$</span> carregando atividades...
+            <div v-if="loading" class="px-4 py-8 font-mono text-sm text-[var(--app-text-subtle)]">
+              <span class="text-[var(--app-primary)]">$</span> carregando atividades...
             </div>
 
             <div v-else-if="activities.length" class="space-y-0 font-mono text-sm">
               <div
                 v-for="(activity, index) in activities"
                 :key="index"
-                class="border-b border-white/5 px-4 py-4 last:border-b-0"
+                class="border-b border-[var(--app-border-soft)] px-4 py-4 last:border-b-0"
               >
                 <div
                   v-for="line in terminalOutput(activity)"
                   :key="line"
-                  class="mb-1 break-all text-zinc-300 last:mb-0"
+                  class="mb-1 break-all text-[var(--app-text-soft)] last:mb-0"
                 >
                   <span
                     v-if="line.startsWith('$')"
-                    class="text-[#FF9200]"
+                    class="text-[var(--app-primary)]"
                   >
                     {{ line }}
                   </span>
                   <span
                     v-else
-                    class="text-zinc-400"
+                    class="text-[var(--app-text-muted)]"
                   >
                     {{ line }}
                   </span>
@@ -430,13 +430,13 @@ onMounted(() => {
               </div>
             </div>
 
-            <div v-else class="px-4 py-8 font-mono text-sm text-zinc-500">
-              <span class="text-[#FF9200]">$</span> aguardando novas atividades...
+            <div v-else class="px-4 py-8 font-mono text-sm text-[var(--app-text-subtle)]">
+              <span class="text-[var(--app-primary)]">$</span> aguardando novas atividades...
             </div>
           </div>
 
-          <div class="mt-4 rounded-[20px] border border-white/6 bg-[#0F0F0F] px-4 py-4 font-mono text-sm text-zinc-300">
-            <div class="mb-2 flex items-center gap-2 text-zinc-500">
+          <div class="mt-4 rounded-[20px] border border-[var(--app-border)] bg-[var(--app-terminal)] px-4 py-4 font-mono text-sm text-[var(--app-text-soft)]">
+            <div class="mb-2 flex items-center gap-2 text-[var(--app-text-subtle)]">
               <Database class="h-4 w-4" />
               noxis status
             </div>
@@ -465,23 +465,23 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="rounded-[28px] border border-white/6 bg-[#1C1C1C] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.20)]">
+        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
           <div class="mb-4 flex items-center justify-between gap-4">
             <div>
-              <h2 class="flex items-center gap-2 text-xl font-semibold text-white">
-                <TrendingUp class="h-5 w-5 text-[#FF9200]" />
+              <h2 class="flex items-center gap-2 text-xl font-semibold text-[var(--app-text)]">
+                <TrendingUp class="h-5 w-5 text-[var(--app-primary)]" />
                 Histórico de crescimento
               </h2>
-              <p class="mt-1 text-sm text-zinc-400">
+              <p class="mt-1 text-sm text-[var(--app-text-muted)]">
                 Evolução do uso registrado ao longo do tempo.
               </p>
             </div>
 
             <div class="text-right">
-              <div class="text-xs uppercase tracking-[0.14em] text-zinc-500">
+              <div class="text-xs uppercase tracking-[0.14em] text-[var(--app-text-subtle)]">
                 Último valor
               </div>
-              <div class="text-2xl font-semibold text-white">
+              <div class="text-2xl font-semibold text-[var(--app-text)]">
                 {{ lastChartValue }} TB
               </div>
             </div>
@@ -489,21 +489,21 @@ onMounted(() => {
 
           <div
             v-if="loading"
-            class="rounded-[20px] border border-white/6 bg-[#232323] p-4"
+            class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4"
           >
             <div class="animate-pulse">
               <div class="mb-3 flex items-center justify-between">
-                <div class="h-4 w-24 rounded bg-[#2A2A2A]"></div>
-                <div class="h-4 w-20 rounded bg-[#2A2A2A]"></div>
+                <div class="h-4 w-24 rounded bg-[var(--app-surface-hover)]"></div>
+                <div class="h-4 w-20 rounded bg-[var(--app-surface-hover)]"></div>
               </div>
-              <div class="h-[260px] rounded bg-[#202020]"></div>
+              <div class="h-[260px] rounded bg-[var(--app-surface-2)]"></div>
             </div>
           </div>
 
-          <div v-else-if="chartData.length" class="rounded-[20px] border border-white/6 bg-[#232323] p-4">
+          <div v-else-if="chartData.length" class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4">
             <div class="mb-3 flex items-center justify-between">
-              <div class="text-sm text-zinc-500">Volume total</div>
-              <div class="text-sm font-medium text-white">
+              <div class="text-sm text-[var(--app-text-subtle)]">Volume total</div>
+              <div class="text-sm font-medium text-[var(--app-text)]">
                 Pico: {{ chartMax }} TB
               </div>
             </div>
@@ -558,12 +558,12 @@ onMounted(() => {
               <div
                 v-for="item in chartDots"
                 :key="item.date"
-                class="rounded-xl border border-white/6 bg-[#1C1C1C] px-3 py-2"
+                class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2"
               >
-                <div class="truncate text-xs text-zinc-500">
+                <div class="truncate text-xs text-[var(--app-text-subtle)]">
                   {{ item.date }}
                 </div>
-                <div class="mt-1 text-sm font-medium text-white">
+                <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
                   {{ item.value }} TB
                 </div>
               </div>
@@ -572,7 +572,7 @@ onMounted(() => {
 
           <div
             v-else
-            class="rounded-[20px] border border-white/6 bg-[#232323] px-4 py-10 text-sm text-zinc-400"
+            class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-10 text-sm text-[var(--app-text-muted)]"
           >
             Nenhum dado de histórico disponível.
           </div>
