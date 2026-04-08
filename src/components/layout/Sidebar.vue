@@ -1,5 +1,5 @@
 <script setup>
-import { Search, Activity, FolderKanban, GalleryHorizontal, Images } from 'lucide-vue-next'
+import { Search, Activity, FolderKanban, GalleryHorizontal, Images, SunMedium, MoonStar } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useTheme } from '../../composables/useTheme'
