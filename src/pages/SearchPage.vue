@@ -147,7 +147,7 @@ function buildEncodedPath(path) {
 
 function getImageUrl(file) {
   if (!file?.path) return null
-  return `http://localhost:9003/arquivos/${buildEncodedPath(file.path)}`
+  return `http://192.168.0.162:9003/arquivos/${buildEncodedPath(file.path)}`
 }
 
 async function fetchSearch() {
@@ -412,157 +412,130 @@ watch(query, () => {
           {{ error }}
         </div>
 
-        <div
-          v-if="viewMode === 'list'"
-          class="overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow)]"
-        >
-          <div class="hidden grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] gap-5 border-b border-[var(--app-border)] bg-[var(--app-surface-2)] px-5 py-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--app-text-subtle)] xl:grid">
-            <div>Nome</div>
-            <div>Caminho</div>
-            <div>Tipo</div>
-            <div>Tamanho</div>
-            <div>Modificado</div>
-            <div class="text-right">Ações</div>
-          </div>
+<div
+  v-if="viewMode === 'list'"
+  class="overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow)]"
+>
+  <div class="hidden grid-cols-[minmax(420px,1.9fr)_90px_110px_140px_minmax(150px,0.8fr)] gap-5 border-b border-[var(--app-border)] bg-[var(--app-surface-2)] px-5 py-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--app-text-subtle)] xl:grid">
+    <div>Arquivo</div>
+    <div>Tipo</div>
+    <div>Tamanho</div>
+    <div>Modificado</div>
+    <div class="text-right">Ações</div>
+  </div>
 
-          <div v-if="loading" class="divide-y divide-white/6">
-            <div
-              v-for="n in 6"
-              :key="n"
-              class="animate-pulse px-5 py-4"
-            >
-              <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] xl:items-center xl:gap-5">
-                <div class="min-w-0">
-                  <div class="flex items-start gap-3">
-                    <div class="h-10 w-10 shrink-0 rounded-xl bg-[var(--app-surface-4)]"></div>
-                    <div class="min-w-0 flex-1">
-                      <div class="h-4 w-48 rounded bg-[var(--app-surface-hover)]"></div>
-                      <div class="mt-2 h-3 w-72 rounded bg-[var(--app-surface-4)]"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="hidden xl:block">
-                  <div class="h-3 w-48 rounded bg-[var(--app-surface-4)]"></div>
-                </div>
-                <div class="hidden xl:block">
-                  <div class="h-6 w-16 rounded-md bg-[var(--app-accent-bg)]"></div>
-                </div>
-                <div class="hidden xl:block">
-                  <div class="h-3 w-16 rounded bg-[var(--app-surface-4)]"></div>
-                </div>
-                <div class="hidden xl:block">
-                  <div class="h-3 w-24 rounded bg-[var(--app-surface-4)]"></div>
-                </div>
-                <div class="flex gap-2 xl:justify-end">
-                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-hover)]"></div>
-                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
-                  <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
-                </div>
-              </div>
+  <div v-if="loading" class="divide-y divide-white/6">
+    <div
+      v-for="n in 6"
+      :key="n"
+      class="animate-pulse px-5 py-4"
+    >
+      <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(420px,1.9fr)_90px_110px_140px_minmax(150px,0.8fr)] xl:items-center xl:gap-5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 shrink-0 rounded-xl bg-[var(--app-surface-4)]"></div>
+            <div class="min-w-0 flex-1">
+              <div class="h-4 w-56 rounded bg-[var(--app-surface-hover)]"></div>
+              <div class="mt-2 h-3 w-72 rounded bg-[var(--app-surface-4)]"></div>
             </div>
           </div>
-
-          <div v-else-if="files.length === 0" class="px-5 py-12 text-sm text-[var(--app-text-muted)]">
-            Nenhum arquivo encontrado.
-          </div>
-
-          <template v-else>
-            <article
-              v-for="file in files"
-              :key="file.id"
-              class="cursor-pointer border-b border-[var(--app-border)] px-5 py-4 transition last:border-b-0 hover:bg-[var(--app-surface-2)]"
-              @click="openDetails(file)"
-            >
-              <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(280px,1.4fr)_minmax(260px,1.15fr)_90px_100px_140px_minmax(220px,0.95fr)] xl:items-center xl:gap-5">
-                <div class="min-w-0">
-                  <div class="flex items-start gap-3">
-                    <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--app-surface-4)] text-[var(--app-text-muted)]">
-                      <File class="h-4 w-4" />
-                    </div>
-
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2">
-                        <h3
-                          class="truncate text-[15px] font-medium text-[var(--app-text)]"
-                          :title="file.name"
-                          v-html="highlightText(file.name, query)"
-                        ></h3>
-
-                        <span class="inline-flex rounded-md border border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--app-accent-text)] xl:hidden">
-                          {{ formatTypeLabel(file.type) }}
-                        </span>
-                      </div>
-
-                      <p
-                        class="mt-1 text-sm text-[var(--app-text-subtle)]"
-                        :title="file.path"
-                        v-html="highlightText(shortenPath(file.path, 78), query)"
-                      ></p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="hidden min-w-0 xl:block">
-                  <p
-                    class="truncate text-sm text-[var(--app-text-subtle)]"
-                    :title="file.fullPath || file.path"
-                    v-html="highlightText(shortenPath(file.fullPath || file.path, 64), query)"
-                  ></p>
-                </div>
-
-                <div class="hidden xl:block">
-                  <span class="inline-flex rounded-md border border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] px-2 py-1 text-xs font-medium text-[var(--app-accent-text)]">
-                    {{ formatTypeLabel(file.type) }}
-                  </span>
-                </div>
-
-                <div class="hidden text-sm text-[var(--app-text-muted)] xl:block">
-                  {{ file.size }}
-                </div>
-
-                <div class="hidden text-sm text-[var(--app-text-muted)] xl:block">
-                  {{ file.updated }}
-                </div>
-
-                <div class="flex min-w-0 flex-wrap items-center gap-2 xl:justify-end">
-                  <button
-                    v-if="canPreview(file)"
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--app-primary)] text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
-                    title="Preview"
-                    @click.stop="openPreview(file)"
-                  >
-                    <Eye class="h-4 w-4" />
-                  </button>
-
-                  <button
-                    v-else
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                    title="Baixar"
-                    @click.stop="downloadFile(file)"
-                  >
-                    <Download class="h-4 w-4" />
-                  </button>
-
-                  <button
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                    title="Baixar"
-                    @click.stop="downloadFile(file)"
-                  >
-                    <Download class="h-4 w-4" />
-                  </button>
-
-                  <button
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-2)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                    title="Copiar caminho"
-                    @click.stop="copyPath(file)"
-                  >
-                    <Clipboard class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </article>
-          </template>
         </div>
+        <div class="hidden xl:block">
+          <div class="h-6 w-14 rounded-md bg-[var(--app-accent-bg)]"></div>
+        </div>
+        <div class="hidden xl:block">
+          <div class="h-3 w-16 rounded bg-[var(--app-surface-4)]"></div>
+        </div>
+        <div class="hidden xl:block">
+          <div class="h-3 w-24 rounded bg-[var(--app-surface-4)]"></div>
+        </div>
+        <div class="flex gap-2 xl:justify-end">
+          <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-hover)]"></div>
+          <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
+          <div class="h-9 w-9 rounded-lg bg-[var(--app-surface-4)]"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="files.length === 0" class="px-5 py-12 text-sm text-[var(--app-text-muted)]">
+    Nenhum arquivo encontrado.
+  </div>
+
+  <template v-else>
+    <article
+      v-for="file in files"
+      :key="file.id"
+      class="cursor-pointer border-b border-[var(--app-border)] px-5 py-4 transition last:border-b-0 hover:bg-[var(--app-surface-2)]"
+      @click="openDetails(file)"
+    >
+      <div class="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(420px,1.9fr)_90px_110px_140px_minmax(150px,0.8fr)] xl:items-center xl:gap-5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--app-surface-4)] text-[var(--app-text-muted)]">
+              <File class="h-4 w-4" />
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <h3
+                class="truncate text-[15px] font-medium leading-5 text-[var(--app-text)]"
+                :title="file.name"
+                v-html="highlightText(file.name, query)"
+              ></h3>
+
+              <p
+                class="mt-1 truncate text-[13px] leading-5 text-[var(--app-text-subtle)]"
+                :title="file.path"
+                v-html="highlightText(file.path, query)"
+              ></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden xl:block">
+          <span class="inline-flex rounded-md border border-[color:color-mix(in_srgb,var(--app-primary)_22%,transparent)] bg-[var(--app-accent-bg)] px-2 py-1 text-xs font-medium text-[var(--app-accent-text)]">
+            {{ formatTypeLabel(file.type) }}
+          </span>
+        </div>
+
+        <div class="hidden text-sm text-[var(--app-text-muted)] xl:block">
+          {{ file.size }}
+        </div>
+
+        <div class="hidden text-sm leading-5 text-[var(--app-text-muted)] xl:block">
+          {{ file.updated }}
+        </div>
+
+        <div class="flex min-w-0 flex-wrap items-center gap-2 xl:justify-end">
+          <button
+            v-if="canPreview(file)"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--app-primary)] text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
+            title="Preview"
+            @click.stop="openPreview(file)"
+          >
+            <Eye class="h-4 w-4" />
+          </button>
+
+          <button
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+            title="Baixar"
+            @click.stop="downloadFile(file)"
+          >
+            <Download class="h-4 w-4" />
+          </button>
+
+          <button
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-2)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+            title="Copiar caminho"
+            @click.stop="copyPath(file)"
+          >
+            <Clipboard class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </article>
+  </template>
+</div>
 
         <div
           v-else
@@ -606,7 +579,7 @@ watch(query, () => {
                 <img
                   v-if="isImage(file)"
                   :src="getImageUrl(file)"
-                  class="h-full w-full object-cover"
+                  class="h-full w-full object-contain"
                   loading="lazy"
                 />
                 <FileText
@@ -741,13 +714,13 @@ watch(query, () => {
                 </button>
               </div>
 
-              <div class="grid gap-6 p-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+              <div class="grid gap-6 p-6 lg:grid-cols-[260px_minmax(0,1fr)]">
                 <div>
-                  <div class="flex h-44 items-center justify-center overflow-hidden rounded-3xl bg-[var(--app-surface-3)]">
+                  <div class="flex aspect-square items-center justify-center overflow-hidden rounded-3xl bg-[var(--app-surface-3)]">
                     <img
                       v-if="isImage(selectedFile)"
                       :src="getImageUrl(selectedFile)"
-                      class="h-full w-full object-cover"
+                      class="h-full w-full object-contain"
                       loading="lazy"
                     />
                     <FileText
@@ -762,18 +735,24 @@ watch(query, () => {
                     class="break-words text-2xl font-semibold tracking-[-0.02em] text-[var(--app-text)]"
                     v-html="highlightText(selectedFile.name, query)"
                   ></h3>
+                      <div class="mt-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                          Localização
+                        </p>
 
-                  <p class="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
-                    {{ selectedFile.description }}
-                  </p>
-
+                        <div class="mt-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-3">
+                          <p class="break-words text-sm text-[var(--app-text-muted)]">
+                            {{ selectedFile.path }}
+                          </p>
+                        </div>
+                      </div>
                   <div class="mt-6 grid gap-4">
                     <div class="flex items-start gap-3">
                       <FolderTree class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
                       <div class="min-w-0">
                         <div class="text-sm font-medium text-[var(--app-text-strong)]">Caminho</div>
                         <p
-                          class="mt-1 break-all text-sm text-[var(--app-text-muted)]"
+                          class="mt-1 break-words text-sm leading-5 text-[var(--app-text-muted)]"
                           v-html="highlightText(selectedFile.fullPath, query)"
                         ></p>
                       </div>
@@ -822,41 +801,32 @@ watch(query, () => {
                     </div>
                   </div>
 
-                  <div class="mt-6 grid gap-2 sm:grid-cols-3">
-                    <button
-                      v-if="canPreview(selectedFile)"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
-                      @click="openPreview(selectedFile)"
-                    >
-                      <Eye class="h-4 w-4" />
-                      Abrir preview
-                    </button>
+                    <div class="mt-6 grid gap-2 sm:grid-cols-3">
+                      <button
+                        v-if="canPreview(selectedFile)"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
+                        @click="openPreview(selectedFile)"
+                      >
+                        <Eye class="h-4 w-4" />
+                        Abrir preview
+                      </button>
 
-                    <button
-                      v-else
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="downloadFile(selectedFile)"
-                    >
-                      <Download class="h-4 w-4" />
-                      Baixar
-                    </button>
+                      <button
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                        @click="downloadFile(selectedFile)"
+                      >
+                        <Download class="h-4 w-4" />
+                        Baixar
+                      </button>
 
-                    <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="downloadFile(selectedFile)"
-                    >
-                      <Download class="h-4 w-4" />
-                      Baixar
-                    </button>
-
-                    <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="copyPath(selectedFile)"
-                    >
-                      <component :is="copied ? Check : Clipboard" class="h-4 w-4" />
-                      {{ copied ? 'Copiado' : 'Copiar caminho' }}
-                    </button>
-                  </div>
+                      <button
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                        @click="copyPath(selectedFile)"
+                      >
+                        <component :is="copied ? Check : Clipboard" class="h-4 w-4" />
+                        {{ copied ? 'Copiado' : 'Copiar caminho' }}
+                      </button>
+                    </div>
                 </div>
               </div>
             </template>

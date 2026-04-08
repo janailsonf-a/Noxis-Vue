@@ -1,5 +1,5 @@
 <script setup>
-import { Search, Activity, MoonStar, SunMedium } from 'lucide-vue-next'
+import { Search, Activity, FolderKanban, GalleryHorizontal, Images } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useTheme } from '../../composables/useTheme'
@@ -8,11 +8,26 @@ const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 
 const items = [
-  { to: '/', icon: Search, label: 'Search', description: 'Buscar arquivos' },
-  { to: '/status', icon: Activity, label: 'Status', description: 'Monitoramento' },
+  { to: '/', icon: Search, label: 'Search', description: 'Buscar arquivos', external: false },
+  { to: '/status', icon: Activity, label: 'Status', description: 'Monitoramento', external: false },
+
+  {
+    to: 'https://amigosdobem.sharepoint.com/sites/materialapoiomkt',
+    icon: FolderKanban,
+    label: 'Material MKT',
+    description: 'SharePoint',
+    external: true,
+  },
+  {
+    to: 'http://acervo.local/auth/login',
+    icon: Images,
+    label: 'Immich',
+    description: 'Galeria de fotos',
+    external: true,
+  },
 ]
 
-const logoSrc = computed(() => (isDark.value ? '/logo-noxis-dark.png' : '/logo-noxis-dark.png'))
+const logoSrc = computed(() => (isDark.value ? '/LOGO_ADB_2025-01.png' : '/LOGO_ADB_2025-01.png'))
 
 function isActive(path) {
   return route.path === path
@@ -53,14 +68,18 @@ function isActive(path) {
         Navegação
       </div>
 
-      <nav class="flex flex-col gap-1.5">
-        <RouterLink
+        <nav class="flex flex-col gap-1.5">
+        <component
           v-for="item in items"
           :key="item.to"
-          :to="item.to"
+          :is="item.external ? 'a' : RouterLink"
+          :to="!item.external ? item.to : undefined"
+          :href="item.external ? item.to : undefined"
+          :target="item.external ? '_blank' : undefined"
+          :rel="item.external ? 'noopener noreferrer' : undefined"
           class="group rounded-xl px-3 py-3 transition-all duration-200"
           :class="
-            isActive(item.to)
+            !item.external && isActive(item.to)
               ? 'border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text)]'
               : 'text-[var(--app-text-muted)] hover:bg-[var(--app-surface-2)] hover:text-[var(--app-text)]'
           "
@@ -69,7 +88,7 @@ function isActive(path) {
             <div
               class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--app-border)] transition"
               :class="
-                isActive(item.to)
+                !item.external && isActive(item.to)
                   ? 'bg-[var(--app-surface)] text-[var(--app-text)]'
                   : 'bg-[var(--app-surface-2)] text-[var(--app-text-muted)] group-hover:bg-[var(--app-surface-3)] group-hover:text-[var(--app-text)]'
               "
@@ -80,20 +99,20 @@ function isActive(path) {
             <div class="min-w-0">
               <div
                 class="truncate text-sm font-medium"
-                :class="isActive(item.to) ? 'text-[var(--app-text)]' : 'text-[var(--app-text-strong)]'"
+                :class="!item.external && isActive(item.to) ? 'text-[var(--app-text)]' : 'text-[var(--app-text-strong)]'"
               >
                 {{ item.label }}
               </div>
 
               <div
                 class="truncate text-xs"
-                :class="isActive(item.to) ? 'text-[var(--app-text-muted)]' : 'text-[var(--app-text-subtle)]'"
+                :class="!item.external && isActive(item.to) ? 'text-[var(--app-text-muted)]' : 'text-[var(--app-text-subtle)]'"
               >
                 {{ item.description }}
               </div>
             </div>
           </div>
-        </RouterLink>
+        </component>
       </nav>
 
       <div class="mt-auto space-y-3 pt-6">
