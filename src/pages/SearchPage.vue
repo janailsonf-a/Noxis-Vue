@@ -147,7 +147,7 @@ function buildEncodedPath(path) {
 
 function getImageUrl(file) {
   if (!file?.path) return null
-  return `http://192.168.0.162:9003/arquivos/${buildEncodedPath(file.path)}`
+  return `http://192.168.0.162:9102/arquivos/${buildEncodedPath(file.path)}`
 }
 
 async function fetchSearch() {
@@ -248,7 +248,7 @@ function openPreview(file = selectedFile.value) {
     .split('/')
     .map(part => encodeURIComponent(part))
     .join('/')
-    const previewUrl = `http://192.168.0.162:9003/preview?path=${encodedPath}`
+    const previewUrl = `http://192.168.0.162:9102/preview?path=${encodedPath}`
 
     window.open(previewUrl, '_blank')
 }
@@ -264,7 +264,7 @@ function downloadFile(file = selectedFile.value) {
     return
   }
 
-  window.open(`http://192.168.0.162:9003${file.downloadLink}`, '_blank')
+  window.open(`http://192.168.0.162:9102${file.downloadLink}`, '_blank')
 }
 
 function changePage(newPage) {
