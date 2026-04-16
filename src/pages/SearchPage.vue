@@ -27,6 +27,13 @@ import {
   Trash2,
 } from 'lucide-vue-next'
 
+const authUser = computed(() => {
+  const raw = localStorage.getItem('user')
+  return raw ? JSON.parse(raw) : null
+})
+
+const isAdmin = computed(() => authUser.value?.role === 'admin')
+
 const quickFilters = [
   { label: 'PDF', value: 'pdf', icon: FileText },
   { label: 'Planilhas', value: 'xlsx', icon: FileSpreadsheet },
@@ -292,29 +299,44 @@ async function openEditModal(file = selectedFile.value) {
   metadataError.value = ''
   metadataLoading.value = true
 
+  metadataForm.value = {
+    title: file.title || file.displayName || '',
+    description: file.description || '',
+    campaign: file.campaign || '',
+    status: file.status || '',
+    is_official: Boolean(file.isOfficial),
+    tagsText: Array.isArray(file.tags) ? file.tags.join(', ') : '',
+    metadataPairs: Object.entries(file.metadata || {}).map(([key, value]) => ({
+      key,
+      value: value ?? '',
+    })),
+  }
+
+  showEditModal.value = true
+
   try {
     const response = await api.get(`/api/files/${file.id}/metadata`)
     const data = response.data || {}
 
-    const pairs = Object.entries(data.metadata || {}).map(([key, value]) => ({
-      key,
-      value: value ?? '',
-    }))
-
     metadataForm.value = {
-      title: data.title || '',
-      description: data.description || '',
-      campaign: data.campaign || '',
-      status: data.status || '',
+      title: data.title || file.title || file.displayName || '',
+      description: data.description || file.description || '',
+      campaign: data.campaign || file.campaign || '',
+      status: data.status || file.status || '',
       is_official: Boolean(data.is_official),
-      tagsText: Array.isArray(data.tags) ? data.tags.join(', ') : '',
-      metadataPairs: pairs,
+      tagsText: Array.isArray(data.tags)
+        ? data.tags.join(', ')
+        : Array.isArray(file.tags)
+          ? file.tags.join(', ')
+          : '',
+      metadataPairs: Object.entries(data.metadata || {}).map(([key, value]) => ({
+        key,
+        value: value ?? '',
+      })),
     }
-
-    showEditModal.value = true
   } catch (err) {
-    metadataError.value = 'Não foi possível carregar os metadados do arquivo.'
-    showEditModal.value = true
+    metadataError.value = 'Não foi possível carregar os metadados completos. Você ainda pode editar e salvar manualmente.'
+    console.error('Erro ao carregar metadados:', err)
   } finally {
     metadataLoading.value = false
   }
@@ -360,25 +382,31 @@ async function saveMetadata() {
     const response = await api.put(`/api/files/${selectedFile.value.id}/metadata`, payload)
     const updated = response.data || {}
 
-    files.value = files.value.map((file) => {
-      if (file.id !== selectedFile.value.id) return file
+files.value = files.value.map((file) => {
+  if (file.id !== selectedFile.value.id) return file
 
-      return normalizeFile(
-        {
-          ...file,
-          ...updated,
-          filename: file.name,
-          rel_path: file.path,
-          full_path: file.fullPath,
-          size_mb: file.size !== '--' ? parseFloat(String(file.size).replace(' MB', '')) : null,
-          modified_at: file.updated,
-          created_at: file.created,
-          ext: file.type,
-          is_official: updated.is_official,
-        },
-        0
-      )
-    })
+  return normalizeFile(
+    {
+      ...file,
+      ...updated,
+      title: updated.title ?? metadataForm.value.title,
+      description: updated.description ?? metadataForm.value.description,
+      campaign: updated.campaign ?? metadataForm.value.campaign,
+      status: updated.status ?? metadataForm.value.status,
+      tags: updated.tags ?? tags,
+      metadata: updated.metadata ?? metadata,
+      filename: file.name,
+      rel_path: file.path,
+      full_path: file.fullPath,
+      size_mb: file.size !== '--' ? parseFloat(String(file.size).replace(' MB', '')) : null,
+      modified_at: file.updated,
+      created_at: file.created,
+      ext: file.type,
+      is_official: updated.is_official ?? metadataForm.value.is_official,
+    },
+    0
+  )
+})
 
     closeEditModal()
   } catch (err) {
@@ -667,18 +695,18 @@ watch(query, () => {
                         v-html="highlightText(file.path, query)"
                       ></p>
 
-                      <p
+                      <!-- <p
                         v-if="file.description"
                         class="mt-1 line-clamp-1 text-[13px] leading-5 text-[var(--app-text-muted)]"
                         :title="file.description"
                         v-html="highlightText(file.description, query)"
-                      ></p>
+                      ></p> -->
 
                       <div
                         v-if="file.campaign || file.status || file.tags?.length"
                         class="mt-2 flex flex-wrap items-center gap-2"
                       >
-                        <span
+                        <!-- <span
                           v-if="file.campaign"
                           class="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-2.5 py-1 text-[11px] text-[var(--app-text-soft)]"
                         >
@@ -698,7 +726,7 @@ watch(query, () => {
                           class="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface-2)] px-2.5 py-1 text-[11px] text-[var(--app-text-muted)]"
                         >
                           #{{ tag }}
-                        </span>
+                        </span> -->
                       </div>
                     </div>
                   </div>
@@ -729,6 +757,7 @@ watch(query, () => {
                   </button>
 
                   <button
+                    v-if="isAdmin"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     title="Editar metadados"
                     @click.stop="openEditModal(file)"
@@ -795,18 +824,18 @@ watch(query, () => {
               class="cursor-pointer rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[var(--app-shadow)] transition hover:-translate-y-[1px] hover:bg-[var(--app-surface-2)] hover:shadow-[var(--app-shadow-strong)]"
               @click="openDetails(file)"
             >
-              <div class="mb-4 flex h-32 items-center justify-center overflow-hidden rounded-2xl bg-[var(--app-surface-3)]">
-                <img
-                  v-if="isImage(file)"
-                  :src="getImageUrl(file)"
-                  class="h-full w-full object-contain"
-                  loading="lazy"
-                />
-                <FileText
-                  v-else
-                  class="h-8 w-8 text-[var(--app-text-subtle)]"
-                />
-              </div>
+            <div class="flex h-[320px] items-center justify-center overflow-hidden rounded-3xl bg-[var(--app-surface-3)]">
+              <img
+                v-if="isImage(selectedFile)"
+                :src="getImageUrl(selectedFile)"
+                class="h-full w-full object-contain"
+                loading="lazy"
+              />
+              <FileText
+                v-else
+                class="h-12 w-12 text-[var(--app-text-subtle)]"
+              />
+            </div>
 
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
@@ -830,12 +859,12 @@ watch(query, () => {
                   v-html="highlightText(shortenPath(file.path, 52), query)"
                 ></p>
 
-                <p
+                <!-- <p
                   v-if="file.description"
                   class="mt-2 line-clamp-2 text-sm leading-5 text-[var(--app-text-muted)]"
                   :title="file.description"
                   v-html="highlightText(file.description, query)"
-                ></p>
+                ></p> -->
               </div>
 
               <div class="mt-4 flex items-center justify-between text-sm text-[var(--app-text-subtle)]">
@@ -843,7 +872,7 @@ watch(query, () => {
                 <span class="font-medium text-[var(--app-accent-text)]">{{ formatTypeLabel(file.type) }}</span>
               </div>
 
-              <div
+              <!-- <div
                 v-if="file.campaign || file.status || file.tags?.length"
                 class="mt-3 flex flex-wrap items-center gap-2"
               >
@@ -851,7 +880,7 @@ watch(query, () => {
                   v-if="file.campaign"
                   class="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-2.5 py-1 text-[11px] text-[var(--app-text-soft)]"
                 >
-                  🎯 {{ file.campaign }}
+                  {{ file.campaign }}
                 </span>
 
                 <span
@@ -868,7 +897,7 @@ watch(query, () => {
                 >
                   #{{ tag }}
                 </span>
-              </div>
+              </div> -->
 
               <div class="mt-4 grid gap-2">
                 <button
@@ -891,6 +920,7 @@ watch(query, () => {
 
                 <div class="grid grid-cols-3 gap-2">
                   <button
+                  v-if="isAdmin"
                     class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
                     @click.stop="openEditModal(file)"
                   >
@@ -961,43 +991,60 @@ watch(query, () => {
         </div>
       </section>
 
-      <teleport to="body">
-        <div
-          v-if="showDetailsModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--app-overlay)] p-4 backdrop-blur-sm"
-          @click.self="closeDetails"
-        >
-          <div class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow-strong)]">
-            <template v-if="selectedFile">
-              <div class="flex items-center justify-between border-b border-[var(--app-border)] px-6 py-4">
-                <div>
-                  <h2 class="text-lg font-semibold text-[var(--app-text)]">Detalhes do arquivo</h2>
-                  <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                    Informações completas e ações rápidas.
-                  </p>
-                </div>
+<teleport to="body">
+  <div
+    v-if="showDetailsModal"
+    class="fixed inset-0 z-50 bg-[var(--app-overlay)] backdrop-blur-sm"
+    @click.self="closeDetails"
+  >
+    <div class="flex min-h-screen items-center justify-center p-3 sm:p-5">
+      <div
+        class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow-strong)]"
+      >
+        <template v-if="selectedFile">
+          <!-- Header -->
+          <div
+            class="flex flex-col gap-3 border-b border-[var(--app-border)] px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6"
+          >
+            <div class="min-w-0">
+              <h2 class="text-lg font-semibold text-[var(--app-text)]">
+                Detalhes do arquivo
+              </h2>
+              <p class="mt-1 text-sm text-[var(--app-text-muted)]">
+                Informações completas e ações rápidas.
+              </p>
+            </div>
 
-                <div class="flex items-center gap-2">
-                  <button
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                    @click="openEditModal(selectedFile)"
+            <div class="flex shrink-0 items-center gap-2 self-start">
+              <button
+                v-if="isAdmin"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                @click="openEditModal(selectedFile)"
+              >
+                <Pencil class="h-4 w-4" />
+                Editar
+              </button>
+
+              <button
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                @click="closeDetails"
+              >
+                <X class="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="grid gap-6 p-4 sm:p-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+              <!-- Sidebar -->
+              <aside class="min-w-0 space-y-4">
+                <div
+                  class="overflow-hidden rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)]"
+                >
+                  <div
+                    class="flex aspect-[4/5] items-center justify-center bg-[var(--app-surface-3)]"
                   >
-                    <Pencil class="h-4 w-4" />
-                    Editar
-                  </button>
-
-                  <button
-                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                    @click="closeDetails"
-                  >
-                    <X class="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div class="grid flex-1 gap-6 overflow-y-auto p-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-                <div>
-                  <div class="flex aspect-square items-center justify-center overflow-hidden rounded-3xl bg-[var(--app-surface-3)]">
                     <img
                       v-if="isImage(selectedFile)"
                       :src="getImageUrl(selectedFile)"
@@ -1009,29 +1056,72 @@ watch(query, () => {
                       class="h-12 w-12 text-[var(--app-text-subtle)]"
                     />
                   </div>
-                </div>
 
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h3
-                      class="truncate text-xl font-semibold tracking-[-0.02em] text-[var(--app-text)]"
-                      :title="selectedFile.displayName"
-                      v-html="highlightText(selectedFile.displayName, query)"
-                    ></h3>
+                  <div class="space-y-3 p-4">
+                    <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+                      <div class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                        Tipo
+                      </div>
+                      <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
+                        {{ formatTypeLabel(selectedFile.type) }}
+                      </div>
+                    </div>
+
+                    <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+                      <div class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                        Tamanho
+                      </div>
+                      <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
+                        {{ selectedFile.size }}
+                      </div>
+                    </div>
+
+                    <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+                      <div class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                        Última modificação
+                      </div>
+                      <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
+                        {{ selectedFile.updated }}
+                      </div>
+                    </div>
+
+                    <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+                      <div class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                        Área
+                      </div>
+                      <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
+                        {{ selectedFile.area }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Main content -->
+              <section class="min-w-0">
+                <div class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5">
+                  <div class="flex flex-wrap items-start gap-3">
+                    <div class="min-w-0 flex-1">
+                      <h3
+                        class="break-words text-2xl font-semibold tracking-[-0.03em] text-[var(--app-text)]"
+                        :title="selectedFile.displayName"
+                        v-html="highlightText(selectedFile.displayName, query)"
+                      ></h3>
+
+                      <p
+                        v-if="selectedFile.description"
+                        class="mt-3 break-words text-sm leading-6 text-[var(--app-text-muted)]"
+                        v-html="highlightText(selectedFile.description, query)"
+                      ></p>
+                    </div>
 
                     <span
                       v-if="selectedFile.isOfficial"
-                      class="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/12 px-2.5 py-1 text-xs font-medium text-emerald-300"
+                      class="inline-flex shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-300"
                     >
                       Oficial
                     </span>
                   </div>
-
-                  <p
-                    v-if="selectedFile.description"
-                    class="mt-3 text-sm leading-6 text-[var(--app-text-muted)]"
-                    v-html="highlightText(selectedFile.description, query)"
-                  ></p>
 
                   <div
                     v-if="selectedFile.campaign || selectedFile.status || selectedFile.tags?.length"
@@ -1054,15 +1144,37 @@ watch(query, () => {
                     <span
                       v-for="tag in selectedFile.tags"
                       :key="tag"
-                      class="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface-2)] px-3 py-1 text-xs text-[var(--app-text-muted)]"
+                      class="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-1 text-xs text-[var(--app-text-muted)]"
                     >
                       #{{ tag }}
                     </span>
                   </div>
+                </div>
+
+                <div class="mt-4 grid gap-4">
+                  <div class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5">
+                    <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                      Localização no índice
+                    </div>
+                    <p class="break-all text-sm leading-6 text-[var(--app-text-muted)]">
+                      {{ selectedFile.path }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5">
+                    <div class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
+                      <FolderTree class="h-4 w-4" />
+                      Caminho completo
+                    </div>
+                    <p
+                      class="break-all text-sm leading-6 text-[var(--app-text-muted)]"
+                      v-html="highlightText(selectedFile.fullPath, query)"
+                    ></p>
+                  </div>
 
                   <div
                     v-if="metadataEntries(selectedFile).length"
-                    class="mt-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-4"
+                    class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5"
                   >
                     <div class="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
                       Metadados adicionais
@@ -1072,162 +1184,123 @@ watch(query, () => {
                       <div
                         v-for="[key, value] in metadataEntries(selectedFile)"
                         :key="key"
-                        class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2"
+                        class="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3"
                       >
                         <div class="text-xs uppercase tracking-wide text-[var(--app-text-subtle)]">
                           {{ key }}
                         </div>
-                        <div class="mt-1 break-words text-sm text-[var(--app-text-soft)]">
+                        <div class="mt-1 break-all text-sm leading-6 text-[var(--app-text-soft)]">
                           {{ value }}
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <div class="mt-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-subtle)]">
-                      Localização
-                    </p>
-
-                    <div class="mt-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-3">
-                      <p class="break-words text-sm text-[var(--app-text-muted)]">
-                        {{ selectedFile.path }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="mt-6 grid gap-4">
-                    <div class="flex items-start gap-3">
-                      <FolderTree class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
-                      <div class="min-w-0">
-                        <div class="text-sm font-medium text-[var(--app-text-strong)]">Caminho</div>
-                        <p
-                          class="mt-1 break-words text-sm leading-5 text-[var(--app-text-muted)]"
-                          v-html="highlightText(selectedFile.fullPath, query)"
-                        ></p>
-                      </div>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                      <div class="flex items-start gap-3">
-                        <Calendar class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
-                        <div>
-                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Última modificação</div>
-                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                            {{ selectedFile.updated }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="flex items-start gap-3">
-                        <HardDrive class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
-                        <div>
-                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Tamanho</div>
-                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                            {{ selectedFile.size }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="flex items-start gap-3">
-                        <File class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
-                        <div>
-                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Tipo</div>
-                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                            {{ formatTypeLabel(selectedFile.type) }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="flex items-start gap-3">
-                        <Info class="mt-0.5 h-4 w-4 shrink-0 text-[var(--app-text-subtle)]" />
-                        <div>
-                          <div class="text-sm font-medium text-[var(--app-text-strong)]">Área</div>
-                          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                            {{ selectedFile.area }}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-6 grid gap-2 sm:grid-cols-3">
-                    <button
-                      v-if="canPreview(selectedFile)"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
-                      @click="openPreview(selectedFile)"
-                    >
-                      <Eye class="h-4 w-4" />
-                      Abrir
-                    </button>
-
-                    <!-- <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="openEditModal(selectedFile)"
-                    >
-                      <Pencil class="h-4 w-4" />
-                      Editar
-                    </button> -->
-
-                    <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="downloadFile(selectedFile)"
-                    >
-                      <Download class="h-4 w-4" />
-                      Baixar
-                    </button>
-
-                    <button
-                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="copyPath(selectedFile)"
-                    >
-                      <component :is="copied ? Check : Clipboard" class="h-4 w-4" />
-                      {{ copied ? 'Copiado' : 'Copiar' }}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </template>
+              </section>
+            </div>
           </div>
-        </div>
-      </teleport>
 
-      <teleport to="body">
-        <div
-          v-if="showEditModal"
-          class="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--app-overlay)] p-4 backdrop-blur-sm"
-          @click.self="closeEditModal"
-        >
-          <div class="w-full max-w-3xl overflow-hidden rounded-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow-strong)]">
-            <div class="flex items-center justify-between border-b border-[var(--app-border)] px-6 py-4">
-              <div>
-                <h2 class="text-lg font-semibold text-[var(--app-text)]">Editar metadados</h2>
-                <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                  Atualize as informações do arquivo selecionado.
-                </p>
-              </div>
+          <!-- Footer -->
+          <div class="border-t border-[var(--app-border)] px-4 py-4 sm:px-6">
+            <div class="grid gap-2 sm:grid-cols-3">
+              <button
+                v-if="canPreview(selectedFile)"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
+                @click="openPreview(selectedFile)"
+              >
+                <Eye class="h-4 w-4" />
+                Abrir
+              </button>
 
               <button
-                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                @click="closeEditModal"
+                v-else
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)]"
+                @click="downloadFile(selectedFile)"
               >
-                <X class="h-5 w-5" />
+                <Download class="h-4 w-4" />
+                Baixar
+              </button>
+
+              <button
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                @click="downloadFile(selectedFile)"
+              >
+                <Download class="h-4 w-4" />
+                Baixar
+              </button>
+
+              <button
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                @click="copyPath(selectedFile)"
+              >
+                <component :is="copied ? Check : Clipboard" class="h-4 w-4" />
+                {{ copied ? 'Copiado' : 'Copiar caminho' }}
               </button>
             </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</teleport>
 
-            <div class="space-y-5 p-6">
-              <div
-                v-if="metadataError"
-                class="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300"
-              >
-                {{ metadataError }}
-              </div>
+      <teleport to="body">
+  <div
+    v-if="showEditModal"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--app-overlay)] p-4 backdrop-blur-sm"
+    @click.self="closeEditModal"
+  >
+    <div class="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[var(--app-shadow-strong)]">
+      <div class="flex items-center justify-between border-b border-[var(--app-border)] px-6 py-4">
+        <div class="min-w-0">
+          <h2 class="text-lg font-semibold text-[var(--app-text)]">
+            Editar metadados
+          </h2>
+          <p class="mt-1 text-sm text-[var(--app-text-muted)]">
+            Atualize as informações do arquivo selecionado.
+          </p>
+        </div>
 
-              <div v-if="metadataLoading" class="text-sm text-[var(--app-text-muted)]">
-                Carregando metadados...
-              </div>
+        <button
+          type="button"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+          @click="closeEditModal"
+        >
+          <X class="h-5 w-5" />
+        </button>
+      </div>
 
-              <template v-else>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div
+          v-if="metadataError"
+          class="mb-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+        >
+          {{ metadataError }}
+        </div>
+
+        <div v-if="metadataLoading" class="text-sm text-[var(--app-text-muted)]">
+          Carregando metadados...
+        </div>
+
+        <template v-else>
+          <div class="grid gap-5">
+            <div class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5">
+              <h3 class="text-sm font-semibold text-[var(--app-text)]">
+                Informações principais
+              </h3>
+
+              <div class="mt-4 grid gap-4">
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-[var(--app-text-soft)]">
+                    Título
+                  </label>
+                  <input
+                    v-model="metadataForm.title"
+                    type="text"
+                    class="w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3 text-sm text-[var(--app-text)] outline-none transition focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)]"
+                    placeholder="Título do arquivo"
+                  />
+                </div>
 
                 <div>
                   <label class="mb-2 block text-sm font-medium text-[var(--app-text-soft)]">
@@ -1286,7 +1359,7 @@ watch(query, () => {
                   </p>
                 </div>
 
-                <label class="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3">
+                <label class="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-3">
                   <input
                     v-model="metadataForm.is_official"
                     type="checkbox"
@@ -1296,88 +1369,93 @@ watch(query, () => {
                     Marcar como arquivo oficial
                   </span>
                 </label>
-
-                <div class="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-4">
-                  <div class="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h3 class="text-sm font-medium text-[var(--app-text)]">
-                        Metadados adicionais
-                      </h3>
-                      <p class="mt-1 text-xs text-[var(--app-text-subtle)]">
-                        Adicione quaisquer campos personalizados.
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      class="inline-flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-3 py-2 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                      @click="addMetadataPair"
-                    >
-                      <Plus class="h-4 w-4" />
-                      Adicionar campo
-                    </button>
-                  </div>
-
-                  <div
-                    v-if="metadataForm.metadataPairs.length === 0"
-                    class="rounded-xl border border-dashed border-[var(--app-border)] px-4 py-5 text-sm text-[var(--app-text-subtle)]"
-                  >
-                    Nenhum metadado adicional adicionado.
-                  </div>
-
-                  <div v-else class="space-y-3">
-                    <div
-                      v-for="(pair, index) in metadataForm.metadataPairs"
-                      :key="index"
-                      class="grid gap-3 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-                    >
-                      <input
-                        v-model="pair.key"
-                        type="text"
-                        class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm text-[var(--app-text)] outline-none transition focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)]"
-                        placeholder="Chave (ex: author)"
-                      />
-
-                      <input
-                        v-model="pair.value"
-                        type="text"
-                        class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm text-[var(--app-text)] outline-none transition focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)]"
-                        placeholder="Valor"
-                      />
-
-                      <button
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-red-300 transition hover:bg-red-500/15"
-                        @click="removeMetadataPair(index)"
-                      >
-                        <Trash2 class="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </template>
+              </div>
             </div>
 
-            <div class="flex items-center justify-end gap-3 border-t border-[var(--app-border)] px-6 py-4">
-              <button
-                class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
-                @click="closeEditModal"
-              >
-                Cancelar
-              </button>
+            <div class="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-5">
+              <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 class="text-sm font-semibold text-[var(--app-text)]">
+                    Metadados adicionais
+                  </h3>
+                  <p class="mt-1 text-xs text-[var(--app-text-subtle)]">
+                    Adicione quaisquer campos personalizados.
+                  </p>
+                </div>
 
-              <button
-                class="inline-flex items-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-2.5 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="savingMetadata || metadataLoading"
-                @click="saveMetadata"
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+                  @click="addMetadataPair"
+                >
+                  <Plus class="h-4 w-4" />
+                  Adicionar campo
+                </button>
+              </div>
+
+              <div
+                v-if="metadataForm.metadataPairs.length === 0"
+                class="rounded-2xl border border-dashed border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-5 text-sm text-[var(--app-text-subtle)]"
               >
-                <Save class="h-4 w-4" />
-                {{ savingMetadata ? 'Salvando...' : 'Salvar metadados' }}
-              </button>
+                Nenhum metadado adicional adicionado.
+              </div>
+
+              <div v-else class="space-y-3">
+                <div
+                  v-for="(pair, index) in metadataForm.metadataPairs"
+                  :key="index"
+                  class="grid gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+                >
+                  <input
+                    v-model="pair.key"
+                    type="text"
+                    class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5 text-sm text-[var(--app-text)] outline-none transition focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)]"
+                    placeholder="Chave (ex: author)"
+                  />
+
+                  <input
+                    v-model="pair.value"
+                    type="text"
+                    class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5 text-sm text-[var(--app-text)] outline-none transition focus:border-[color:color-mix(in_srgb,var(--app-primary)_40%,transparent)]"
+                    placeholder="Valor"
+                  />
+
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-red-300 transition hover:bg-red-500/15"
+                    @click="removeMetadataPair(index)"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </teleport>
+        </template>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-[var(--app-border)] px-6 py-4">
+        <button
+          type="button"
+          class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-2.5 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+          @click="closeEditModal"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl bg-[var(--app-primary)] px-4 py-2.5 text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="savingMetadata || metadataLoading"
+          @click="saveMetadata"
+        >
+          <Save class="h-4 w-4" />
+          {{ savingMetadata ? 'Salvando...' : 'Salvar metadados' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</teleport>
     </div>
   </AppLayout>
 </template>
