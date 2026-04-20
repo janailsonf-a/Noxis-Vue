@@ -7,14 +7,23 @@ import {
   MemoryStick,
   HardDrive,
   Activity,
-  Clock3,
   Terminal,
-  TrendingUp,
   Database,
+  Clock3,
 } from 'lucide-vue-next'
 
 const loading = ref(false)
 const error = ref('')
+
+const authUser = computed(() => {
+  try {
+    const raw = localStorage.getItem('user')
+    return raw ? JSON.parse(raw) : null
+  } catch (error) {
+    console.error('Erro ao ler usuário do localStorage:', error)
+    return null
+  }
+})
 
 const status = ref({
   overall_status: '...',
@@ -46,47 +55,36 @@ const indexer = ref({
 })
 
 const activities = ref([])
-const history = ref({
-  dates: [],
-  values: [],
-})
 
 function formatNumber(value) {
   if (value == null) return '--'
   return new Intl.NumberFormat('pt-BR').format(value)
 }
 
-function formatValue(value) {
-  if (value == null || Number.isNaN(Number(value))) return 0
-  return Number(value)
-}
-
 function formatTerminalTime(value) {
   if (!value) return '--'
   return String(value).replace('T', ' ').slice(0, 19)
 }
+
 function formatDateTime(value) {
   if (!value) return '--'
 
   try {
-    // se for número (timestamp)
     const timestamp = Number(value)
 
-    if (!isNaN(timestamp)) {
-      const date = new Date(timestamp * 1000) // 🔥 conversão correta
+    if (!Number.isNaN(timestamp)) {
+      const date = new Date(timestamp * 1000)
       return new Intl.DateTimeFormat('pt-BR', {
         dateStyle: 'short',
         timeStyle: 'medium',
       }).format(date)
     }
 
-    // fallback (caso venha string ISO no futuro)
     const date = new Date(value)
     return new Intl.DateTimeFormat('pt-BR', {
       dateStyle: 'short',
       timeStyle: 'medium',
     }).format(date)
-
   } catch {
     return value
   }
@@ -94,6 +92,7 @@ function formatDateTime(value) {
 
 function normalizeActionLabel(action) {
   if (!action) return 'evento'
+
   const map = {
     created: 'created',
     updated: 'updated',
@@ -101,6 +100,7 @@ function normalizeActionLabel(action) {
     indexed: 'indexed',
     new: 'new',
   }
+
   return map[String(action).toLowerCase()] || String(action).toLowerCase()
 }
 
@@ -109,7 +109,7 @@ function terminalOutput(activity) {
   const file = activity?.filename || activity?.rel_path || '--'
 
   return [
-    '$ noxis indexer',
+    '$ noxis activity',
     `> arquivo: ${file}`,
     `> ação: ${action}`,
     '> status: concluído',
@@ -117,110 +117,59 @@ function terminalOutput(activity) {
   ]
 }
 
-const chartData = computed(() => {
-  const dates = history.value?.dates || []
-  const values = history.value?.values || []
+function belongsToLoggedUser(activity) {
+  const user = authUser.value
+  if (!user || !activity) return false
 
-  return dates.map((date, index) => ({
-    date,
-    value: formatValue(values[index]),
-  }))
-})
+  const loggedId = user.id != null ? String(user.id) : null
+  const loggedEmail = user.email ? String(user.email).toLowerCase() : null
+  const loggedName = (user.name || user.nome) ? String(user.name || user.nome).toLowerCase() : null
 
-const chartMax = computed(() => {
-  if (!chartData.value.length) return 1
-  const max = Math.max(...chartData.value.map((item) => item.value))
-  return max <= 0 ? 1 : max
-})
+  const activityUserId =
+    activity.user_id ??
+    activity.usuario_id ??
+    activity.user?.id ??
+    activity.usuario?.id
 
-const chartMin = computed(() => {
-  if (!chartData.value.length) return 0
-  return Math.min(...chartData.value.map((item) => item.value))
-})
+  const activityEmail =
+    activity.user_email ??
+    activity.email ??
+    activity.user?.email ??
+    activity.usuario?.email
 
-const lastChartValue = computed(() => {
-  if (!chartData.value.length) return '--'
-  return chartData.value[chartData.value.length - 1]?.value ?? '--'
-})
+  const activityName =
+    activity.user_name ??
+    activity.nome ??
+    activity.user?.name ??
+    activity.user?.nome ??
+    activity.usuario?.name ??
+    activity.usuario?.nome
 
-const chartPoints = computed(() => {
-  const data = chartData.value
-  if (!data.length) return ''
+  if (loggedId && activityUserId != null && String(activityUserId) === loggedId) {
+    return true
+  }
 
-  const width = 760
-  const height = 260
-  const paddingX = 28
-  const paddingY = 24
-  const usableWidth = width - paddingX * 2
-  const usableHeight = height - paddingY * 2
+  if (
+    loggedEmail &&
+    activityEmail &&
+    String(activityEmail).toLowerCase() === loggedEmail
+  ) {
+    return true
+  }
 
-  const min = chartMin.value
-  const max = chartMax.value
-  const range = max - min || 1
+  if (
+    loggedName &&
+    activityName &&
+    String(activityName).toLowerCase() === loggedName
+  ) {
+    return true
+  }
 
-  return data
-    .map((item, index) => {
-      const x =
-        data.length === 1
-          ? width / 2
-          : paddingX + (index / (data.length - 1)) * usableWidth
+  return false
+}
 
-      const y =
-        paddingY + usableHeight - ((item.value - min) / range) * usableHeight
-
-      return `${x},${y}`
-    })
-    .join(' ')
-})
-
-const chartAreaPoints = computed(() => {
-  const line = chartPoints.value
-  if (!line) return ''
-
-  const points = line.split(' ')
-  const first = points[0]
-  const last = points[points.length - 1]
-
-  if (!first || !last) return ''
-
-  const firstX = first.split(',')[0]
-  const lastX = last.split(',')[0]
-  const baseY = 260 - 24
-
-  return `${line} ${lastX},${baseY} ${firstX},${baseY}`
-})
-
-const chartDots = computed(() => {
-  const data = chartData.value
-  if (!data.length) return []
-
-  const width = 760
-  const height = 260
-  const paddingX = 28
-  const paddingY = 24
-  const usableWidth = width - paddingX * 2
-  const usableHeight = height - paddingY * 2
-
-  const min = chartMin.value
-  const max = chartMax.value
-  const range = max - min || 1
-
-  return data.map((item, index) => {
-    const x =
-      data.length === 1
-        ? width / 2
-        : paddingX + (index / (data.length - 1)) * usableWidth
-
-    const y =
-      paddingY + usableHeight - ((item.value - min) / range) * usableHeight
-
-    return {
-      ...item,
-      x,
-      y,
-      isLast: index === data.length - 1,
-    }
-  })
+const userActivities = computed(() => {
+  return activities.value.filter(belongsToLoggedUser).slice(0, 6)
 })
 
 async function fetchStatus() {
@@ -228,17 +177,15 @@ async function fetchStatus() {
   error.value = ''
 
   try {
-    const [statusRes, indexerRes, activitiesRes, historyRes] = await Promise.all([
+    const [statusRes, indexerRes, activitiesRes] = await Promise.all([
       api.get('/api/status'),
       api.get('/api/index-status'),
-      api.get('/api/activities?limit=6'),
-      api.get('/api/history'),
+      api.get('/api/activities?limit=30'),
     ])
 
     status.value = statusRes.data
     indexer.value = indexerRes.data
-    activities.value = activitiesRes.data
-    history.value = historyRes.data
+    activities.value = Array.isArray(activitiesRes.data) ? activitiesRes.data : []
   } catch {
     error.value = 'Não foi possível carregar os dados do status.'
   } finally {
@@ -266,7 +213,7 @@ onMounted(() => {
         </h1>
 
         <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-          Monitoramento em tempo real do indexador e dos principais indicadores.
+          Monitoramento do indexador e visão das suas atividades recentes.
         </p>
       </div>
 
@@ -319,7 +266,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <section class="grid gap-6">
+      <section class="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
           <div class="mb-4">
             <h2 class="text-xl font-semibold text-[var(--app-text)]">Indexação</h2>
@@ -335,7 +282,7 @@ onMounted(() => {
             ></div>
           </div>
 
-          <div class="grid gap-4 md:grid-cols-5">
+          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
               <div class="text-sm text-[var(--app-text-subtle)]">Percentual</div>
               <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
@@ -365,25 +312,40 @@ onMounted(() => {
             </div>
 
             <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
-              <div class="text-sm text-[var(--app-text-subtle)]">Última execução</div>
-              <div class="mt-1 text-base font-semibold text-[var(--app-text)]">
-                {{ formatDateTime(indexer.last_finished_time) }}
+              <div class="text-sm text-[var(--app-text-subtle)]">Atualizados</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
+                {{ formatNumber(indexer.last_updated) }}
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+              <div class="text-sm text-[var(--app-text-subtle)]">Removidos</div>
+              <div class="mt-1 text-xl font-semibold text-[var(--app-text)]">
+                {{ formatNumber(indexer.last_deleted) }}
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div class="mt-4 rounded-2xl bg-[var(--app-surface-3)] px-4 py-3">
+            <div class="flex items-center gap-2 text-sm text-[var(--app-text-subtle)]">
+              <Clock3 class="h-4 w-4" />
+              Última execução
+            </div>
+            <div class="mt-1 text-base font-semibold text-[var(--app-text)]">
+              {{ formatDateTime(indexer.last_finished_time) }}
+            </div>
+          </div>
+        </div>
+
         <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
           <div class="mb-4 flex items-start justify-between">
             <div>
               <h2 class="flex items-center gap-2 text-xl font-semibold text-[var(--app-text)]">
                 <Terminal class="h-5 w-5 text-[var(--app-primary)]" />
-                Atividades recentes
+                Suas atividades recentes
               </h2>
               <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                Saída recente do worker em formato de terminal.
+                Ações relacionadas à sua conta.
               </p>
             </div>
 
@@ -396,16 +358,16 @@ onMounted(() => {
 
           <div class="overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-terminal)]">
             <div class="border-b border-[var(--app-border)] px-4 py-3 text-xs uppercase tracking-[0.18em] text-[var(--app-text-subtle)]">
-              noxis@worker:~$
+              noxis@activity:~$
             </div>
 
             <div v-if="loading" class="px-4 py-8 font-mono text-sm text-[var(--app-text-subtle)]">
               <span class="text-[var(--app-primary)]">$</span> carregando atividades...
             </div>
 
-            <div v-else-if="activities.length" class="space-y-0 font-mono text-sm">
+            <div v-else-if="userActivities.length" class="space-y-0 font-mono text-sm">
               <div
-                v-for="(activity, index) in activities"
+                v-for="(activity, index) in userActivities"
                 :key="index"
                 class="border-b border-[var(--app-border-soft)] px-4 py-4 last:border-b-0"
               >
@@ -431,7 +393,7 @@ onMounted(() => {
             </div>
 
             <div v-else class="px-4 py-8 font-mono text-sm text-[var(--app-text-subtle)]">
-              <span class="text-[var(--app-primary)]">$</span> aguardando novas atividades...
+              <span class="text-[var(--app-primary)]">$</span> nenhuma atividade encontrada para o usuário logado...
             </div>
           </div>
 
@@ -440,6 +402,7 @@ onMounted(() => {
               <Database class="h-4 w-4" />
               noxis status
             </div>
+
             <div class="space-y-1">
               <p>
                 <span class="text-emerald-400">✔</span> rclone:
@@ -462,119 +425,6 @@ onMounted(() => {
                 {{ status.overall_status }}
               </p>
             </div>
-          </div>
-        </div>
-
-        <div class="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)]">
-          <div class="mb-4 flex items-center justify-between gap-4">
-            <div>
-              <h2 class="flex items-center gap-2 text-xl font-semibold text-[var(--app-text)]">
-                <TrendingUp class="h-5 w-5 text-[var(--app-primary)]" />
-                Histórico de crescimento
-              </h2>
-              <p class="mt-1 text-sm text-[var(--app-text-muted)]">
-                Evolução do uso registrado ao longo do tempo.
-              </p>
-            </div>
-
-            <div class="text-right">
-              <div class="text-xs uppercase tracking-[0.14em] text-[var(--app-text-subtle)]">
-                Último valor
-              </div>
-              <div class="text-2xl font-semibold text-[var(--app-text)]">
-                {{ lastChartValue }} TB
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="loading"
-            class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4"
-          >
-            <div class="animate-pulse">
-              <div class="mb-3 flex items-center justify-between">
-                <div class="h-4 w-24 rounded bg-[var(--app-surface-hover)]"></div>
-                <div class="h-4 w-20 rounded bg-[var(--app-surface-hover)]"></div>
-              </div>
-              <div class="h-[260px] rounded bg-[var(--app-surface-2)]"></div>
-            </div>
-          </div>
-
-          <div v-else-if="chartData.length" class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4">
-            <div class="mb-3 flex items-center justify-between">
-              <div class="text-sm text-[var(--app-text-subtle)]">Volume total</div>
-              <div class="text-sm font-medium text-[var(--app-text)]">
-                Pico: {{ chartMax }} TB
-              </div>
-            </div>
-
-            <div class="overflow-x-auto">
-              <svg
-                viewBox="0 0 760 260"
-                class="h-[260px] min-w-[760px] w-full"
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <linearGradient id="noxisArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#FF9200" stop-opacity="0.28" />
-                    <stop offset="100%" stop-color="#FF9200" stop-opacity="0.03" />
-                  </linearGradient>
-                </defs>
-
-                <line x1="28" y1="236" x2="732" y2="236" stroke="#2A2A2A" />
-                <line x1="28" y1="180" x2="732" y2="180" stroke="#2A2A2A" />
-                <line x1="28" y1="124" x2="732" y2="124" stroke="#2A2A2A" />
-                <line x1="28" y1="68" x2="732" y2="68" stroke="#2A2A2A" />
-                <line x1="28" y1="24" x2="732" y2="24" stroke="#2A2A2A" />
-
-                <polygon
-                  :points="chartAreaPoints"
-                  fill="url(#noxisArea)"
-                />
-
-                <polyline
-                  :points="chartPoints"
-                  fill="none"
-                  stroke="#FF9200"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-
-                <g v-for="dot in chartDots" :key="dot.date">
-                  <circle
-                    :cx="dot.x"
-                    :cy="dot.y"
-                    :r="dot.isLast ? 7 : 5"
-                    :fill="dot.isLast ? '#FF9200' : '#1C1C1C'"
-                    stroke="#FF9200"
-                    stroke-width="3"
-                  />
-                </g>
-              </svg>
-            </div>
-
-            <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div
-                v-for="item in chartDots"
-                :key="item.date"
-                class="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2"
-              >
-                <div class="truncate text-xs text-[var(--app-text-subtle)]">
-                  {{ item.date }}
-                </div>
-                <div class="mt-1 text-sm font-medium text-[var(--app-text)]">
-                  {{ item.value }} TB
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-else
-            class="rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 py-10 text-sm text-[var(--app-text-muted)]"
-          >
-            Nenhum dado de histórico disponível.
           </div>
         </div>
       </section>

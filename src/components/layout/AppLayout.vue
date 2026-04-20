@@ -27,33 +27,36 @@ function logout() {
 
 <template>
   <div class="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)] transition-colors duration-300">
-    <div class="min-h-screen">
-      <Sidebar />
+    <Sidebar />
 
-      <main class="relative ml-[280px] min-h-screen bg-[var(--app-bg)] transition-colors duration-300">
-        <div class="pointer-events-none absolute inset-0">
-          <div
-            class="absolute inset-0 bg-[radial-gradient(circle_at_top,var(--app-grid-radial),transparent_32%)]"
-          ></div>
-          <div
-            class="absolute inset-0 bg-[linear-gradient(var(--app-grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--app-grid-line)_1px,transparent_1px)] bg-[size:32px_32px] opacity-70"
-          ></div>
-        </div>
+    <main
+      class="relative min-h-screen bg-[var(--app-bg)] transition-colors duration-300"
+      style="margin-left: 280px;"
+    >
+      <div class="pointer-events-none absolute inset-0">
+        <div
+          class="absolute inset-0 bg-[radial-gradient(circle_at_top,var(--app-grid-radial),transparent_32%)]"
+        ></div>
+        <div
+          class="absolute inset-0 bg-[linear-gradient(var(--app-grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--app-grid-line)_1px,transparent_1px)] bg-[size:32px_32px] opacity-70"
+        ></div>
+      </div>
 
-        <div class="relative mx-auto max-w-[1480px] px-6 py-6 xl:px-8">
-          <header
+      <div class="relative px-6 py-6 xl:px-8">
+        <div class="mx-auto w-full max-w-[1560px]">
+          <!-- <header
             v-if="authUser"
-            class="mb-6 flex flex-col gap-3 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4 shadow-[var(--app-shadow)] sm:flex-row sm:items-center sm:justify-between sm:px-5"
+            class="sticky top-0 z-30 mb-8 flex flex-col gap-4 rounded-[28px] border border-[var(--app-border)] bg-[color:color-mix(in_srgb,var(--app-surface)_88%,transparent)] px-5 py-4 shadow-[var(--app-shadow)] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between"
           >
-            <div class="flex min-w-0 items-center gap-3">
+            <div class="flex min-w-0 items-center gap-4">
               <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--app-surface-3)] text-[var(--app-text-soft)]"
+                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] text-[var(--app-text-soft)]"
               >
                 <User class="h-5 w-5" />
               </div>
 
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-[var(--app-text)]">
+                <p class="truncate text-sm font-semibold text-[var(--app-text)]">
                   {{ authUser.name }}
                 </p>
 
@@ -63,7 +66,7 @@ function logout() {
                   </span>
 
                   <span
-                    class="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-2.5 py-1 text-[11px] text-[var(--app-text-soft)]"
+                    class="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface-3)] px-2.5 py-1 text-[11px] font-medium text-[var(--app-text-soft)]"
                   >
                     <Shield class="h-3 w-3" />
                     {{ roleLabel }}
@@ -74,17 +77,19 @@ function logout() {
 
             <button
               type="button"
-              class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)]"
+              class="inline-flex h-11 items-center justify-center gap-2 self-start rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] px-4 text-sm text-[var(--app-text-soft)] transition hover:bg-[var(--app-surface-hover)] hover:text-[var(--app-text)] sm:self-auto"
               @click="logout"
             >
               <LogOut class="h-4 w-4" />
-              Sair
+              Sairs
             </button>
-          </header>
+          </header> -->
 
-          <slot />
+          <div class="pb-8">
+            <slot />
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   </div>
 </template>
