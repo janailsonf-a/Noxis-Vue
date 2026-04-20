@@ -93,13 +93,14 @@ function formatDateTime(value) {
 function normalizeActionLabel(action) {
   if (!action) return 'evento'
 
-  const map = {
-    created: 'created',
-    updated: 'updated',
-    deleted: 'deleted',
-    indexed: 'indexed',
-    new: 'new',
-  }
+const map = {
+  preview: 'visualizado',
+  download: 'baixado',
+  search: 'busca realizada',
+  open_details: 'detalhes abertos',
+  copy_path: 'caminho copiado',
+  test: 'teste',
+}
 
   return map[String(action).toLowerCase()] || String(action).toLowerCase()
 }
@@ -169,7 +170,7 @@ function belongsToLoggedUser(activity) {
 }
 
 const userActivities = computed(() => {
-  return activities.value.filter(belongsToLoggedUser).slice(0, 6)
+  return activities.value.slice(0, 6)
 })
 
 async function fetchStatus() {
@@ -180,7 +181,7 @@ async function fetchStatus() {
     const [statusRes, indexerRes, activitiesRes] = await Promise.all([
       api.get('/api/status'),
       api.get('/api/index-status'),
-      api.get('/api/activities?limit=30'),
+      api.get('/api/activities/me?limit=6')
     ])
 
     status.value = statusRes.data
