@@ -526,37 +526,70 @@ async function copyPath(file = selectedFile.value) {
   }
 }
 
-function openPreview(file = selectedFile.value) {
+async function openPreview(file = selectedFile.value) {
   if (!file?.rawPath) {
     error.value = 'Pré-visualização indisponível para este arquivo.'
     return
   }
 
-  saveRecentClick(file)
+  try {
+    const response = await api.get('/preview', {
+      params: {
+        path: file.rawPath,
+      },
+      responseType: 'blob',
+    })
 
-  if (!canPreview(file)) {
-    downloadFile(file)
-    return
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type'] || 'application/octet-stream',
+    })
+
+    const blobUrl = window.URL.createObjectURL(blob)
+    window.open(blobUrl, '_blank')
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(blobUrl)
+    }, 60000)
+  } catch (err) {
+    console.error('Erro ao abrir preview:', err)
+    error.value = 'Não foi possível abrir a pré-visualização.'
   }
-
-  const encodedPath = file.rawPath
-    .split('/')
-    .map((part) => encodeURIComponent(part))
-    .join('/')
-
-  const previewUrl = `http://192.168.0.162:9102/preview?path=${encodedPath}`
-  window.open(previewUrl, '_blank')
 }
 
-function downloadFile(file = selectedFile.value) {
-  if (!file?.downloadLink) return
-
-  if (file.downloadLink.startsWith('http://') || file.downloadLink.startsWith('https://')) {
-    window.open(file.downloadLink, '_blank')
+async function downloadFile(file = selectedFile.value) {
+  if (!file?.rawPath) {
+    error.value = 'Download indisponível para este arquivo.'
     return
   }
 
-  window.open(`http://192.168.0.162:9102${file.downloadLink}`, '_blank')
+  try {
+    const response = await api.get('/download', {
+      params: {
+        path: file.rawPath,
+      },
+      responseType: 'blob',
+    })
+
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type'] || 'application/octet-stream',
+    })
+
+    const blobUrl = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = file.name || 'arquivo'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(blobUrl)
+    }, 60000)
+  } catch (err) {
+    console.error('Erro ao baixar arquivo:', err)
+    error.value = 'Não foi possível baixar o arquivo.'
+  }
 }
 
 function changePage(newPage) {
